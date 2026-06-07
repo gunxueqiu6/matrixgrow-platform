@@ -21,7 +21,7 @@
     .btn-primary { background: #00d4ff; color: #000; }
     .btn-primary:hover { background: #00b8e6; transform: translateY(-1px); }
     .btn-secondary { background: #333; color: #fff; }
-    .tier-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .tier-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
     .tier-card { background: #1a1a2e; padding: 30px; border-radius: 16px; border: 2px solid #333; position: relative; }
     .tier-card.popular { border-color: #00d4ff; }
     .tier-card.popular::before {
@@ -209,7 +209,6 @@
           free: '免费版',
           pro: 'Pro 版',
           promax: 'Pro Max 版',
-          studio: 'Studio 版'
         };
 
         document.getElementById('current-subscription').innerHTML = `
@@ -219,7 +218,6 @@
               <p>已绑定 ${sub.platformsUsed} 个平台 / 最多 ${sub.platformLimit} 个</p>
               <p style="margin-top: 4px;">每平台最多 ${sub.accountsPerPlatform} 个账号</p>
             </div>
-            ${sub.tier === 'studio' ? '' : `<button class="btn btn-primary" onclick="showUpgrade('studio')">升级到 Studio</button>`}
           </div>
         `;
 
@@ -227,7 +225,7 @@
         const tiers = await tiersRes.json();
 
         const grid = tiers.tiers.map(t => `
-          <div class="tier-card ${t.id === 'studio' ? 'popular' : ''}">
+          <div class="tier-card ${t.id === 'promax' ? 'popular' : ''}">
             <h3>${t.name}</h3>
             <div style="color: #888; font-size: 14px; margin-bottom: 8px;">${t.description}</div>
             <div class="tier-price">
@@ -257,8 +255,8 @@
 
     // 显示升级确认
     function showUpgrade(tier) {
-      const tierNames = { pro: 'Pro 版', promax: 'Pro Max 版', studio: 'Studio 版' };
-      const tierPrices = { pro: 99, promax: 299, studio: 999 };
+      const tierNames = { pro: 'Pro 版', promax: 'Pro Max 版' };
+      const tierPrices = { pro: 99, promax: 299 };
 
       pendingOrder = { tier };
 

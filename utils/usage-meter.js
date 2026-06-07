@@ -97,11 +97,6 @@ class UsageMeter {
         aiImagesPerMonth: 200,
         aiVideosPerMonth: 10,
         aiTextPerMonth: Infinity
-      },
-      studio: {
-        aiImagesPerMonth: 1000,
-        aiVideosPerMonth: 60,
-        aiTextPerMonth: Infinity
       }
     };
   }

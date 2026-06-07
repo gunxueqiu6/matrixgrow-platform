@@ -36,16 +36,7 @@ class TierGuard {
         apiKeys: 1,
         whiteLabel: false
       },
-      studio: {
-        platforms: 27,
-        accountsPerPlatform: 10,
-        workflowLimit: Infinity,
-        aiImagesPerMonth: 1000,
-        aiVideosPerMonth: 60,
-        scheduledTasks: Infinity,
-        apiKeys: 5,
-        whiteLabel: true
-      }
+      // Studio 企业版配置位于私有仓库
     };
   }
   /**
@@ -295,7 +286,7 @@ class TierGuard {
    * Express 中间件：检查最小订阅等级
    */
   static requireTier(minTier) {
-    const tierLevels = { free: 1, pro: 2, promax: 3, studio: 4 };
+    const tierLevels = { free: 1, pro: 2, promax: 3 };
 
     return async (req, res, next) => {
       const userId = req.user?.userId;
@@ -398,36 +389,6 @@ class TierGuard {
             aiVideosPerMonth: 10,
             scheduledTasks: 20,
             apiKeys: 1
-          }
-        },
-        {
-          id: 'studio',
-          name: 'Studio',
-          price: 999,
-          features: [
-            '27+ 个平台绑定',
-            '每平台 10 个账号',
-            '高级 AI 改写',
-            '无限工作流',
-            '1000 张 AI 图片/月',
-            '60 分钟 AI 视频/月',
-            '无限定时任务',
-            'API 分析导出',
-            '5 个 API Key',
-            '白标功能',
-            '专属支持',
-            '批量操作',
-            '高级分析'
-          ],
-          limits: {
-            platforms: 27,
-            accountsPerPlatform: 10,
-            workflows: Infinity,
-            aiImagesPerMonth: 1000,
-            aiVideosPerMonth: 60,
-            scheduledTasks: Infinity,
-            apiKeys: 5,
-            whiteLabel: true
           }
         }
       ]
