@@ -1,359 +1,163 @@
-# MatrixGrow - AI 独立开发者增长引擎
+# MatrixGrow — AI 内容分发引擎
 
-> 一句话，全网分发。智能截流，自动获客。
+> Coze/Dify 工作流直接导入 n8n，27+ 平台一键发布，AI 改写 + 智能截流获客。
 
-## 🎯 产品介绍
+<p align="center">
+  <img src="https://img.shields.io/badge/工作流导入-Coze_|_Dify_→_n8n-blue" alt="工作流导入">
+  <img src="https://img.shields.io/badge/分发-27+_平台-green" alt="27+ 平台">
+  <img src="https://img.shields.io/badge/AI_改写-5_种风格-orange" alt="AI 改写">
+</p>
 
-MatrixGrow 是一个 AI 驱动的内容分发和智能获客系统，专为独立开发者和数字创业者打造。
-
-**核心功能：**
-
-| 功能 | 说明 | 状态 |
-|------|------|------|
-| AI 文本重写矩阵 | 一句话输入，自动适配 5 种平台风格 | ✅ 已完成 |
-| 视觉生成模块 | Canvas + HTML-to-Image + Infographic | ✅ 已完成 |
-| 多路混合分发 | API + RPA + Artipub 三轨并行，覆盖 27+ 平台 | ✅ 已完成 |
-| 智能截流引擎 | 7x24 监听 + 三段式回复，覆盖 8+ 平台 | ✅ 已完成 |
-| 私信监控闭环 | 私信自动回复 + 产品链接推送 | ✅ 已完成 |
-| 定时监控调度 | 每 10 分钟自动检查新帖子 | ✅ 已完成 |
-| Docker 部署 | 一键启动 n8n + MatrixGrow 双服务 | ✅ 已完成 |
-
-## 🚀 快速开始
-
-### 1. 安装依赖
+## 快速开始
 
 ```bash
-npm install
-npm run install:playwright  # 安装 Playwright 浏览器
+git clone https://github.com/gunxueqiu6/matrixgrow-platform.git
+cd matrixgrow-platform
+cp .env.example .env   # 填入 API Key
+npm install && npm start
+# 打开 http://localhost:3000
 ```
 
-### 2. 配置环境变量
-
-复制 `.env.example` 为 `.env`，填入你的 API Keys：
-
-```env
-# 必需
-ANTHROPIC_API_KEY=sk-ant-xxxxx  # Claude API
-OPENAI_API_KEY=sk-xxxxx         # GPT-4o
-DEEPSEEK_API_KEY=sk-xxxxx       # 意向度过滤
-
-# 可选
-FLUX_API_KEY=xxxxx              # AI 图片生成
-AYRSHARE_API_KEY=xxxxx          # X/LinkedIn 发布
-DEVTO_API_KEY=xxxxx             # Dev.to 发布
-```
-
-### 3. 启动服务器
-
-```bash
-npm start
-```
-
-访问 [http://localhost:3000](http://localhost:3000)
-
-### 4. Docker 部署（推荐）
+**Docker 部署：**
 
 ```bash
 docker-compose up -d
+# MatrixGrow → http://localhost:3000
+# n8n → http://localhost:5678
 ```
 
-### 5. 启用定时监控
+## 为什么选择 MatrixGrow
 
-```bash
-ENABLE_MONITOR=true npm start
-```
+| 对比维度 | 手动发布 | Artipub | Coze 直发 | **MatrixGrow** |
+|----------|---------|---------|-----------|----------------|
+| 平台覆盖 | 逐个登录 | 博客为主 | 需自建 | **27+ 全平台** |
+| Coze/Dify 工作流 | — | — | 仅自家 | **直接导入 n8n** |
+| AI 改写 | 手动 | 无 | 基础 | **5 种风格适配** |
+| 智能截流 | 无 | 无 | 无 | **7x24 监控 + AI 回复** |
+| 模板商店 | 无 | 无 | 无 | **一键安装** |
+| 分发通道 | 1 | 1 | 1 | **API + RPA + Artipub 三轨** |
 
-## 📁 项目结构
+**独家能力：** 你在 Coze/Dify 搭好的工作流，粘贴 JSON 就能转成 n8n 工作流直接运行——不用重新搭建。
+
+## 功能矩阵
+
+| | 功能 | 说明 |
+|---|------|------|
+| 🔄 | **工作流导入** | Coze/Dify 工作流 JSON → 自动映射 n8n 节点，一键安装 |
+| ✍️ | **AI 内容改写** | 一句话输入，自动适配 5 种平台风格（技术博客/社交媒体/硬核社区/微型博客/小红书） |
+| 🚀 | **多轨分发** | API 直发 + RPA 模拟 + Artipub 博客多发，三轨并行 |
+| 🎯 | **智能截流** | 7x24 关键词监控，AI 意图过滤，三段式自动回复 |
+| 🛒 | **模板商店** | 免费/付费工作流模板一键安装，覆盖小红书/知乎/海外增长等场景 |
+| 🎨 | **AI 视觉生成** | Fal.ai + HeyGen，金句卡片/信息图/AI 视频 |
+| 📊 | **订阅管理** | Free/Pro/Promax 三级分层，按需扩展 |
+| 🐳 | **Docker 部署** | docker-compose up -d，MatrixGrow + n8n 双服务 |
+
+## 项目结构
 
 ```
 .
-├── server.js                 # Express 后端服务器
-├── demo.js                 # 演示脚本
-├── docker-compose.yml        # Docker 部署配置
-├── Dockerfile               # MatrixGrow 容器文件
-├── n8n-workflows/
-│   ├── flows/             # n8n 工作流
-│   │   ├── core-webhook.json   # 核心 webhook 工作流
-│   │   ├── smart-intercept.json # 智能截流工作流
-│   │   ├── dm-monitor.json    # 私信监控工作流
-│   │   ├── ai-rewrite-matrix.json # AI 改写矩阵工作流（新）
-│   │   └── multi-publish.json # 全平台批量发布（新）
-│   └── workflows.md        # n8n 配置文档
-├── ai-agents/
-│   ├── prompts/           # 各平台 Prompt 模板
-│   │   ├── tech-blog-agent.md
-│   │   ├── social-media-agent.md
-│   │   ├── hardcore-community-agent.md
-│   │   ├── micro-blog-agent.md
-│   │   └ intercept-agent.md
-│   └── agent-config.json
-├── vision-generator/       # 视觉生成
-│   ├── card-generator.js  # Canvas 金句卡片
-│   ├── ai-image-generator.js # Flux/SD API
-│   ├── html-card-generator.js # HTML-to-Image（新）
-│   ├── infographic-generator.js # 智能信息图（新）
-│   └── image-styles.json
-├── scripts/
-│   ├── rewriters/         # AI 改写
-│   │   └── text-rewriter.js  # 核心 LLM 改写管线
-│   ├── publishers/        # 发布脚本
-│   │   ├── api-publisher.js  # API 发布
-│   │   ├── rpa-publisher.js # RPA 发布 + 回复
-│   │   └── artipub-publisher.js # Artipub 博客多发（新）
-│   └── listeners/         # 监听脚本
-│       ├── keyword-monitor.js   # 关键词监控
-│       ├── intent-filter.js  # 意向度过滤
-│       └── dm-monitor.js    # 私信监控
-├── data/
-│   └── database.js         # SQLite 数据库持久化
-├── frontend/
-│   └ index.html          # 前端界面
-├── config/
-│   └ platforms.json     # 平台配置
+├── server.js                     # Express 主服务
+├── docker-compose.yml            # Docker 双服务编排
+├── Dockerfile                    # MatrixGrow 容器
+├── routes/
+│   ├── auth.js                   # 用户认证
+│   ├── workflow-import.js        # ★ Coze/Dify → n8n 导入引擎
+│   ├── workflows.js              # 模板商店 + 用户工作流
+│   ├── payment.js                # 支付集成
+│   ├── saas.js                   # SaaS 管理
+│   └── webhooks.js               # Webhook 处理
 ├── utils/
-│   ├── logger.js         # 结构化日志
-│   └── rate-limiter.js     # 速率限制 + 队列
-└── tests/
-    └── index.js          # 测试套件
+│   ├── workflow-converter.js     # ★ IR → n8n JSON 转换器
+│   ├── node-mapper.js            # ★ 节点类型映射引擎
+│   ├── tier-guard.js             # 订阅分级中间件
+│   ├── usage-meter.js            # AI 用量计费
+│   └── llm-adapter.js            # LLM 调用适配
+├── n8n-nodes/
+│   └── nodes/
+│       └── MatrixGrowPublish.node.js  # n8n 自定义发布节点
+├── adapters/
+│   ├── image/                    # Fal.ai / Replicate 适配
+│   └── video/                    # HeyGen 适配
+├── scripts/
+│   ├── rewriters/text-rewriter.js    # AI 改写管线
+│   ├── publishers/                   # API/RPA/Artipub 发布器
+│   └── listeners/                    # 关键词/意向/私信监控
+├── config/
+│   ├── platforms.json            # 27+ 平台配置
+│   ├── workflow-mappings.json    # Coze/Dify 节点映射表
+│   └── ai-providers.json         # AI 提供商配置
+├── data/database.js              # SQLite 数据持久化
+├── middleware/auth.js             # JWT 认证
+├── frontend/                     # Web 控制台
+│   ├── dashboard.html            # 控制台首页
+│   ├── create.html               # ★ 创作中心（AI + 发布）
+│   ├── workflow-import.html      # ★ 工作流导入页
+│   ├── workflows.html            # 工作流商店
+│   ├── subscription.html         # 订阅管理
+│   └── agent.html                # AI 助手
+├── ai-agents/prompts/            # 各平台 Prompt 模板
+└── tests/                        # 测试套件
 ```
 
-## 🔧 API 文档
+★ = v2 核心模块
 
-### 基础接口
+## API
 
-#### POST /api/webhook/matrixgrow-input
+### 工作流导入（v2 核心）
 
-输入内容，启动 AI 改写 + 分发
+| 端点 | 说明 |
+|------|------|
+| `POST /api/workflow/import` | 提交 Coze/Dify 工作流 JSON，自动检测节点 |
+| `PUT /api/workflow/import/:id/mapping` | 配置节点映射（LLM 提供商等） |
+| `POST /api/workflow/import/:id/install` | 转换为 n8n 工作流并安装 |
 
-**请求：**
-```json
-{
-  "text": "我做了一个用 AI 自动帮产品改写并分发到全网的工具",
-  "platforms": ["all"]
-}
-```
+### 模板商店
 
-#### GET /api/health
+| 端点 | 说明 |
+|------|------|
+| `GET /api/workflows/templates` | 获取模板列表（支持分类/免费筛选） |
+| `GET /api/workflows/templates/:id` | 获取模板详情 |
+| `POST /api/workflows/templates/:id/install` | 安装模板到我的工作流 |
 
-健康检查，返回服务状态
+### 用户工作流
 
-#### GET /api/stats
+| 端点 | 说明 |
+|------|------|
+| `GET /api/workflows/my` | 获取我的工作流列表 |
+| `GET /api/workflows/my/:id` | 获取工作流详情 |
+| `PUT /api/workflows/my/:id` | 更新工作流 |
+| `DELETE /api/workflows/my/:id` | 删除工作流 |
 
-获取统计数据
+### AI 生成
 
----
+| 端点 | 说明 |
+|------|------|
+| `POST /api/ai/llm` | LLM 文本生成（DeepSeek/Claude/OpenAI） |
+| `POST /api/ai/image` | AI 图片生成（Fal.ai/Replicate） |
+| `POST /api/ai/video` | AI 视频生成（HeyGen） |
 
-### AI 改写接口
+### 用量统计
 
-#### POST /api/rewrite
+| 端点 | 说明 |
+|------|------|
+| `GET /api/workflows/usage` | 获取 AI 使用统计和历史 |
+| `GET /api/workflows/usage/monthly` | 获取月度使用详情 |
 
-仅 AI 文本改写（不发布）
+## 支持的平台
 
-**请求：**
-```json
-{
-  "text": "原始内容",
-  "platforms": ["tech-blog", "social-media"]
-}
-```
+### 开发者社区
+Dev.to · Medium · Hacker News · V2EX · Product Hunt · 掘金 · CSDN · 思否 · 开源中国
 
----
+### 社交媒体
+X (Twitter) · Instagram · Threads · LinkedIn · 小红书 · 微博 · Facebook · Mastodon
 
-### 图片生成接口
+### 内容/自媒体
+知乎 · 简书 · 微信公众号 · 头条号 · B站专栏 · 百家号 · 搜狐号 · 网易号 · 少数派 · Indie Hackers
 
-#### Canvas 生成
-
-- `POST /api/images/quote-card` - 生成金句卡片
-- `POST /api/images/tech-cover` - 生成技术博客封面
-
-#### HTML-to-Image 生成
-
-- `POST /api/images/html-quote` - 生成 HTML 金句卡片
-- `POST /api/images/html-infographic` - 生成 HTML 信息图
-- `POST /api/images/html-data-card` - 生成 HTML 数据卡片
-
-#### 智能信息图
-
-- `POST /api/images/infographic/from-text` - 从文本自动生成信息图
-- `POST /api/images/infographic/comparison` - 生成对比图表
-- `POST /api/images/infographic/progress` - 生成进度环图表
-- `POST /api/images/infographic/timeline` - 生成时间线图表
+> API 直发 · RPA 模拟 · Artipub 多发，三轨并行覆盖。
 
 ---
 
-### 发布接口
-
-#### API 发布
-
-- `POST /api/publish` - API 平台发布 (X/LinkedIn/Dev.to/Medium/Mastodon)
-
-#### RPA 发布
-
-- `POST /api/publish/rpa` - RPA 平台发布 (20+ 个平台)
-
-#### Artipub 集成
-
-- `GET /api/artipub/platforms` - 获取 Artipub 支持的平台
-- `POST /api/artipub/publish` - Artipub 单平台发布
-- `POST /api/artipub/publish-multiple` - Artipub 批量发布
-- `GET /api/artipub/health` - Artipub 健康检查
-
----
-
-### 截流接口
-
-#### GET /api/monitor/check
-
-检查最新帖子，分类意向度
-
-#### POST /api/intercept/run
-
-手动触发截流流程
-
-#### POST /api/intercept/reply
-
-截流回复（调用 RPA）
-
-## 📖 n8n 工作流配置
-
-见 [n8n-workflows/workflows.md](file:///d:/projects/分发与截流/n8n-workflows/workflows.md)
-
-**已配置的工作流：**
-1. `core-webhook.json` - 内容分发主流程
-2. `smart-intercept.json` - 智能截流闭环
-3. `dm-monitor.json` - 私信监控闭环
-4. `ai-rewrite-matrix.json` - AI 改写矩阵（新）
-5. `multi-publish.json` - 全平台批量发布（新）
-
-## 📌 支持的平台矩阵
-
-### 开发者社区（8 个）
-
-| 平台 | 支持方式 | 发布功能 | 截流功能 |
-|------|----------|---------|---------|
-| Dev.to | API ✅ | ✅ | ❌ |
-| Medium | API/Artipub | ✅ | ❌ |
-| Hacker News | RPA | ✅ | ❌ |
-| V2EX | RPA | ✅ | ✅ |
-| Product Hunt | RPA | ✅ | ❌ |
-| 掘金 | Artipub | ✅ | ✅ |
-| CSDN | Artipub | ✅ | ❌ |
-| 思否 | Artipub | ✅ | ❌ |
-| 开源中国 | Artipub | ✅ | ❌ |
-
-### 社交媒体（8 个）
-
-| 平台 | 支持方式 | 发布功能 | 截流功能 |
-|------|----------|---------|---------|
-| X (Twitter) | API/Ayrshare | ✅ | ✅ |
-| Instagram | RPA | ✅ | ❌ |
-| Threads | RPA | ✅ | ❌ |
-| LinkedIn | API/Ayrshare | ✅ | ❌ |
-| 小红书 | RPA | ✅ | ✅ |
-| 微博 | RPA | ✅ | ✅ |
-| Facebook | RPA | ✅ | ❌ |
-| Mastodon | API | ✅ | ❌ |
-
-### 内容/自媒体平台（9 个）
-
-| 平台 | 支持方式 | 发布功能 |
-|------|----------|---------|
-| 知乎 | RPA | ✅ | ✅ |
-| 简书 | RPA | ✅ | ❌ |
-| 微信公众号 | RPA | ✅ | ❌ |
-| 头条号 | Artipub | ✅ | ❌ |
-| B站专栏 | RPA | ✅ | ❌ |
-| 百家号 | RPA | ✅ | ❌ |
-| 搜狐号 | RPA | ✅ | ❌ |
-| 网易号 | RPA | ✅ | ❌ |
-| 少数派 | RPA | ✅ | ❌ |
-| Indie Hackers | RPA | ✅ | ✅ |
-
-## 📌 各平台发布策略
-
-### V2EX/Reddit - 硬核社区
-
-- **文案风格：** 技术吐槽、分享
-- **图片：** 不配图或贴代码
-- **反风控策略：** 伪装成技术讨论
-- **截流方式：** 无外链，只提私信
-
-### 小红书/Instagram - 视觉社媒
-
-- **文案风格：** 情绪化 + 高饱和度 emoji
-- **图片：** 金句卡片 3 张起
-- **反风控：** RPA 模拟真人
-
-### X/Twitter - 微型博客
-
-- **文案风格：** Thread 式叙事
-- **标签：** #buildinpublic #saas
-- **截流：** 只夸赞产品后私信
-
-### 技术博客 - Medium/Dev.to
-
-- **文案风格：** Build in Public 长文
-- **图片：** 技术感封面 + 截图
-- **策略：** 痛点 → 方案 → 踩坑 → 效果
-
-## 🤖 AI 截流三段式话术
-
-**第一段：共情切入**
-> "太真实了，上个月我的 App 上线也是一个用户没有，切 Tab 发到手软..."
-
-**第二段：干货提供**
-> "其实小红书/X 严抓一稿多发，你得把文案改成适合平台的风格..."
-
-**第三段：弱化钩子**
-> "我后来实在人肉发不动了，自己用工作流拼了个工具，要的话私信我..."
-
-## 📊 项目完成度
-
-**整体完成度：95%**
-
-### 核心功能模块
-
-| 模块 | 完成度 | 状态 |
-|------|--------|------|
-| AI 文本重写矩阵 | 100% | ✅ |
-| AI 视觉生成矩阵 | 100% | ✅ |
-| 全网智能截流引擎 | 100% | ✅ |
-| 多路分发执行层 | 95% | ✅ |
-| n8n 工作流集成 | 90% | ✅ |
-| Docker 部署 | 100% | ✅ |
-
-### 已完成任务清单
-
-| 优先级 | 任务 | 状态 |
-|--------|------|------|
-| P0-1 | docker-compose.yml - 一键启动 n8n + Node | ✅ 完成 |
-| P0-2 | X/Twitter Mention 监听 | ✅ 完成 |
-| P1-3 | Hacker News 发布器 | ✅ 完成 |
-| P1-4 | Instagram 发布器 | ✅ 完成 |
-| P1-5 | Threads 发布器 | ✅ 完成 |
-| P1-6 | 知乎发布器 | ✅ 完成 |
-| P1-7 | 简书发布器 | ✅ 完成 |
-| P1-9 | 小红书关键词监控 | ✅ 完成 |
-| P1-10 | 知乎关键词监控 | ✅ 完成 |
-| P2-11 | Artipub 博客多发集成 | ✅ 完成 |
-| P2-12 | HTML-to-Image 卡片生成 | ✅ 完成 |
-| P2-13 | 信息图生成 | ✅ 完成 |
-| P2-14 | 新增平台 RPA (微博/B站/Facebook/Indie Hackers/少数派/百家号/搜狐号/网易号) | ✅ 完成 |
-| P2-15 | Mastodon API 发布 | ✅ 完成 |
-| P2-16 | n8n 新工作流 (ai-rewrite-matrix + multi-publish) | ✅ 完成 |
-| P2-17 | 更新平台配置和 agent 配置 | ✅ 完成 |
-
-### 待完成任务（P3 产品化）
-
-| 优先级 | 任务 | 说明 |
-|--------|------|------|
-| P3-14 | 多用户账户系统 | 用户注册/登录/API Key 管理 |
-| P3-15 | n8n 工作流产品化封装 | 将工作流暴露为带 UI 的 SaaS 功能 |
-| P3-16 | Dify 可选前端 | 参考文档提到 Dify 可作为前端 |
-| P3-17 | 用户行为分析 | 发布效果追踪、转化漏斗 |
-
-## 🎓 学习资源
-
-- [项目思路.md](file:///d:/projects/分发与截流/项目思路.md) - 原始产品文档
-- [项目推进计划.md](file:///d:/projects/分发与截流/项目推进计划.md) - 差距分析
-- [ai-agents/prompts/](file:///d:/projects/分发与截流/ai-agents/prompts/) - 各平台 Prompt 模板
+<p align="center">
+  团队/企业使用？<a href="https://matrixgrow.cn">联系我们</a>获取 Studio 企业版。
+</p>
