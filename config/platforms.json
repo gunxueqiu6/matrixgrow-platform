@@ -1,0 +1,557 @@
+{
+  "platforms": {
+    "api_channels": {
+      "x": {
+        "name": "X (Twitter)",
+        "api_provider": "ayrshare",
+        "publishMethod": "api",
+        "category": "social-media",
+        "config": {
+          "maxLength": 280,
+          "supportsImages": true,
+          "requiresAuth": true
+        },
+        "credentialFields": [
+          {
+            "key": "apiKey",
+            "label": "Ayrshare API Key",
+            "type": "password",
+            "required": true,
+            "instructions": "Get your API key from https://app.ayrshare.com"
+          }
+        ]
+      },
+      "linkedin": {
+        "name": "LinkedIn",
+        "api_provider": "ayrshare",
+        "publishMethod": "api",
+        "category": "social-media",
+        "config": {
+          "maxLength": 3000,
+          "supportsImages": true,
+          "requiresAuth": true
+        },
+        "credentialFields": [
+          {
+            "key": "apiKey",
+            "label": "Ayrshare API Key",
+            "type": "password",
+            "required": true,
+            "instructions": "Get your API key from https://app.ayrshare.com"
+          }
+        ]
+      },
+      "mastodon": {
+        "name": "Mastodon",
+        "api_provider": "mastodon",
+        "category": "social-media",
+        "publishMethod": "api",
+        "config": {
+          "maxLength": 500,
+          "supportsImages": true,
+          "requiresAuth": true,
+          "api_endpoint": "https://mastodon.social/api/v1"
+        },
+        "credentialFields": [
+          {
+            "key": "instanceUrl",
+            "label": "Instance URL",
+            "type": "text",
+            "required": true,
+            "placeholder": "https://mastodon.social",
+            "instructions": "Your Mastodon instance URL (e.g., https://mastodon.social)"
+          },
+          {
+            "key": "accessToken",
+            "label": "Access Token",
+            "type": "password",
+            "required": true,
+            "instructions": "Go to Preferences → Development → New Application to generate a token"
+          }
+        ]
+      },
+      "devto": {
+        "name": "Dev.to",
+        "category": "tech-blog",
+        "publishMethod": "api",
+        "api_endpoint": "https://dev.to/api",
+        "content_type": "markdown",
+        "requiresAuth": true,
+        "credentialFields": [
+          {
+            "key": "apiKey",
+            "label": "DEV Community API Key",
+            "type": "password",
+            "required": true,
+            "instructions": "Get your API key from https://dev.to/settings/extensions"
+          }
+        ]
+      },
+      "medium": {
+        "name": "Medium",
+        "category": "tech-blog",
+        "publishMethod": "api",
+        "api_endpoint": "https://api.medium.com/v1",
+        "content_type": "html",
+        "requiresAuth": true,
+        "credentialFields": [
+          {
+            "key": "integrationToken",
+            "label": "Integration Token",
+            "type": "password",
+            "required": true,
+            "instructions": "Go to Medium Settings → Security and apps → Integration tokens to generate"
+          },
+          {
+            "key": "authorId",
+            "label": "Author ID",
+            "type": "text",
+            "required": true,
+            "instructions": "Your Medium user ID (found in the integration token page)"
+          }
+        ]
+      }
+    },
+    "artipub_channels": {
+      "juejin": {
+        "name": "掘金",
+        "category": "tech-blog",
+        "publishMethod": "artipub",
+        "content_type": "markdown",
+        "credentialFields": [
+          {
+            "key": "cookie",
+            "label": "登录 Cookie",
+            "type": "text",
+            "required": true,
+            "instructions": "登录掘金网页版后，F12 → Application → Cookies → 复制全部 cookie"
+          }
+        ]
+      },
+      "csdn": {
+        "name": "CSDN",
+        "category": "tech-blog",
+        "publishMethod": "artipub",
+        "content_type": "markdown",
+        "credentialFields": [
+          {
+            "key": "cookie",
+            "label": "登录 Cookie",
+            "type": "text",
+            "required": true,
+            "instructions": "登录 CSDN 网页版后，F12 → Application → Cookies → 复制全部 cookie"
+          }
+        ]
+      },
+      "segmentfault": {
+        "name": "思否",
+        "category": "tech-blog",
+        "publishMethod": "artipub",
+        "content_type": "markdown",
+        "credentialFields": [
+          {
+            "key": "cookie",
+            "label": "登录 Cookie",
+            "type": "text",
+            "required": true,
+            "instructions": "登录 SegmentFault 网页版后，F12 → Application → Cookies → 复制全部 cookie"
+          }
+        ]
+      },
+      "oschina": {
+        "name": "开源中国",
+        "category": "tech-blog",
+        "publishMethod": "artipub",
+        "content_type": "markdown",
+        "credentialFields": [
+          {
+            "key": "cookie",
+            "label": "登录 Cookie",
+            "type": "text",
+            "required": true,
+            "instructions": "登录开源中国网页版后，F12 → Application → Cookies → 复制全部 cookie"
+          }
+        ]
+      },
+      "toutiao": {
+        "name": "头条号",
+        "category": "tech-blog",
+        "publishMethod": "artipub",
+        "content_type": "html",
+        "credentialFields": [
+          {
+            "key": "cookie",
+            "label": "登录 Cookie",
+            "type": "text",
+            "required": true,
+            "instructions": "登录头条号网页版后，F12 → Application → Cookies → 复制全部 cookie"
+          }
+        ]
+      }
+    },
+    "rpa_channels": {
+      "xiaohongshu": {
+        "name": "小红书",
+        "category": "social-media",
+        "publishMethod": "rpa",
+        "requires_images": true,
+        "emoji_required": true,
+        "max_length": 1000,
+        "credentialFields": [
+          {
+            "key": "cookie",
+            "label": "登录 Cookie",
+            "type": "text",
+            "required": true,
+            "instructions": "登录小红书网页版后，F12 → Application → Cookies → 复制全部 cookie"
+          }
+        ]
+      },
+      "v2ex": {
+        "name": "V2EX",
+        "category": "hardcore-community",
+        "publishMethod": "rpa",
+        "no_external_links": true,
+        "max_length": 5000,
+        "requires_login": true,
+        "credentialFields": [
+          {
+            "key": "cookie",
+            "label": "登录 Cookie",
+            "type": "text",
+            "required": true,
+            "instructions": "登录 V2EX 后，F12 → Application → Cookies → 复制全部 cookie"
+          }
+        ]
+      },
+      "weixin": {
+        "name": "微信",
+        "category": "social-media",
+        "publishMethod": "rpa",
+        "requires_qrcode": true,
+        "credentialFields": [
+          {
+            "key": "qrcode",
+            "label": "扫码登录",
+            "type": "qrcode",
+            "required": true,
+            "instructions": "通过二维码扫描登录微信公众号后台"
+          }
+        ]
+      },
+      "weibo": {
+        "name": "微博",
+        "category": "social-media",
+        "publishMethod": "rpa",
+        "max_length": 140,
+        "supports_images": true,
+        "requires_login": true,
+        "credentialFields": [
+          {
+            "key": "cookie",
+            "label": "登录 Cookie",
+            "type": "text",
+            "required": true,
+            "instructions": "登录微博网页版后，F12 → Application → Cookies → 复制全部 cookie"
+          }
+        ]
+      },
+      "bilibili": {
+        "name": "B站",
+        "category": "social-media",
+        "publishMethod": "rpa",
+        "max_length": 10000,
+        "supports_images": true,
+        "requires_login": true,
+        "requires_cover": true,
+        "credentialFields": [
+          {
+            "key": "cookie",
+            "label": "登录 Cookie",
+            "type": "text",
+            "required": true,
+            "instructions": "登录 B站 网页版后，F12 → Application → Cookies → 复制全部 cookie"
+          }
+        ]
+      },
+      "facebook": {
+        "name": "Facebook",
+        "category": "social-media",
+        "publishMethod": "rpa",
+        "max_length": 63206,
+        "supports_images": true,
+        "requires_login": true,
+        "credentialFields": [
+          {
+            "key": "email",
+            "label": "邮箱",
+            "type": "text",
+            "required": true,
+            "instructions": "你的 Facebook 注册邮箱"
+          },
+          {
+            "key": "password",
+            "label": "密码",
+            "type": "password",
+            "required": true,
+            "instructions": "你的 Facebook 密码"
+          }
+        ]
+      },
+      "indiehackers": {
+        "name": "Indie Hackers",
+        "category": "hardcore-community",
+        "publishMethod": "rpa",
+        "max_length": 50000,
+        "content_type": "markdown",
+        "requires_login": true,
+        "credentialFields": [
+          {
+            "key": "email",
+            "label": "邮箱",
+            "type": "text",
+            "required": true,
+            "instructions": "你的 Indie Hackers 注册邮箱"
+          },
+          {
+            "key": "password",
+            "label": "密码",
+            "type": "password",
+            "required": true,
+            "instructions": "你的 Indie Hackers 密码"
+          }
+        ]
+      },
+      "sspai": {
+        "name": "少数派",
+        "category": "tech-blog",
+        "publishMethod": "rpa",
+        "max_length": 50000,
+        "content_type": "markdown",
+        "requires_login": true,
+        "requires_review": true,
+        "credentialFields": [
+          {
+            "key": "cookie",
+            "label": "登录 Cookie",
+            "type": "text",
+            "required": true,
+            "instructions": "登录少数派网页版后，F12 → Application → Cookies → 复制全部 cookie"
+          }
+        ]
+      },
+      "baijiahao": {
+        "name": "百家号",
+        "category": "tech-blog",
+        "publishMethod": "rpa",
+        "max_length": 100000,
+        "supports_images": true,
+        "requires_login": true,
+        "credentialFields": [
+          {
+            "key": "cookie",
+            "label": "登录 Cookie",
+            "type": "text",
+            "required": true,
+            "instructions": "登录百家号网页版后，F12 → Application → Cookies → 复制全部 cookie"
+          }
+        ]
+      },
+      "souhu": {
+        "name": "搜狐号",
+        "category": "tech-blog",
+        "publishMethod": "rpa",
+        "max_length": 100000,
+        "supports_images": true,
+        "requires_login": true,
+        "credentialFields": [
+          {
+            "key": "cookie",
+            "label": "登录 Cookie",
+            "type": "text",
+            "required": true,
+            "instructions": "登录搜狐号网页版后，F12 → Application → Cookies → 复制全部 cookie"
+          }
+        ]
+      },
+      "wangyi": {
+        "name": "网易号",
+        "category": "tech-blog",
+        "publishMethod": "rpa",
+        "max_length": 100000,
+        "supports_images": true,
+        "requires_login": true,
+        "credentialFields": [
+          {
+            "key": "cookie",
+            "label": "登录 Cookie",
+            "type": "text",
+            "required": true,
+            "instructions": "登录网易号网页版后，F12 → Application → Cookies → 复制全部 cookie"
+          }
+        ]
+      },
+      "producthunt": {
+        "name": "Product Hunt",
+        "category": "hub",
+        "publishMethod": "rpa",
+        "description": "Indie maker product launch hub",
+        "max_tagline_length": 60,
+        "requires_login": true,
+        "credentialFields": [
+          {
+            "key": "email",
+            "label": "邮箱",
+            "type": "text",
+            "required": true,
+            "instructions": "你的 Product Hunt 注册邮箱"
+          },
+          {
+            "key": "password",
+            "label": "密码",
+            "type": "password",
+            "required": true,
+            "instructions": "你的 Product Hunt 密码"
+          }
+        ]
+      },
+      "hackernews": {
+        "name": "Hacker News",
+        "category": "hardcore-community",
+        "publishMethod": "rpa",
+        "max_length": 2000,
+        "no_external_links": false,
+        "requires_login": true,
+        "credentialFields": [
+          {
+            "key": "username",
+            "label": "用户名",
+            "type": "text",
+            "required": true,
+            "instructions": "你的 Hacker News 用户名"
+          },
+          {
+            "key": "password",
+            "label": "密码",
+            "type": "password",
+            "required": true,
+            "instructions": "你的 Hacker News 密码"
+          }
+        ]
+      },
+      "instagram": {
+        "name": "Instagram",
+        "category": "social-media",
+        "publishMethod": "rpa",
+        "requires_images": true,
+        "max_length": 2200,
+        "requires_login": true,
+        "credentialFields": [
+          {
+            "key": "username",
+            "label": "用户名",
+            "type": "text",
+            "required": true,
+            "instructions": "你的 Instagram 用户名"
+          },
+          {
+            "key": "password",
+            "label": "密码",
+            "type": "password",
+            "required": true,
+            "instructions": "你的 Instagram 密码"
+          }
+        ]
+      },
+      "threads": {
+        "name": "Threads",
+        "category": "social-media",
+        "publishMethod": "rpa",
+        "max_length": 500,
+        "supports_images": true,
+        "requires_login": true,
+        "credentialFields": [
+          {
+            "key": "username",
+            "label": "用户名",
+            "type": "text",
+            "required": true,
+            "instructions": "你的 Threads/Instagram 用户名"
+          },
+          {
+            "key": "password",
+            "label": "密码",
+            "type": "password",
+            "required": true,
+            "instructions": "你的 Threads/Instagram 密码"
+          }
+        ]
+      },
+      "jianshu": {
+        "name": "简书",
+        "category": "tech-blog",
+        "publishMethod": "rpa",
+        "max_length": 100000,
+        "content_type": "markdown",
+        "requires_login": true,
+        "credentialFields": [
+          {
+            "key": "cookie",
+            "label": "登录 Cookie",
+            "type": "text",
+            "required": true,
+            "instructions": "登录简书网页版后，F12 → Application → Cookies → 复制全部 cookie"
+          }
+        ]
+      },
+      "zhihu": {
+        "name": "知乎",
+        "category": "hardcore-community",
+        "publishMethod": "rpa",
+        "content_type": "html",
+        "requires_login": true,
+        "credentialFields": [
+          {
+            "key": "cookie",
+            "label": "登录 Cookie",
+            "type": "text",
+            "required": true,
+            "instructions": "登录知乎网页版后，F12 → Application → Cookies → 复制全部 cookie"
+          }
+        ]
+      }
+    }
+  },
+  "intercept_platforms": {
+    "x": {
+      "keywords": ["no traffic", "how to market", "saas launch", "indie hacker"],
+      "avoid_keywords": ["spam", "promotion"]
+    },
+    "reddit": {
+      "subreddits": ["r/saas", "r/indiehackers", "r/startups"],
+      "keywords": ["first users", "marketing", "growth"]
+    },
+    "v2ex": {
+      "nodes": ["v2ex", "programming", "career"],
+      "keywords": ["推广", "流量", "独立开发", "获客"]
+    },
+    "zhihu": {
+      "keywords": ["独立开发者", "产品推广", "冷启动", "用户增长"]
+    },
+    "xiaohongshu": {
+      "keywords": ["独立开发", "获客", "推广", "变现"]
+    },
+    "weibo": {
+      "keywords": ["独立开发", "获客", "增长", "冷启动"],
+      "avoid_keywords": ["广告", "推广"]
+    },
+    "juejin": {
+      "keywords": ["独立开发", "产品推广", "增长", "冷启动"],
+      "avoid_keywords": ["广告"]
+    },
+    "indiehackers": {
+      "keywords": ["no users", "need users", "how to grow", "first users"],
+      "avoid_keywords": ["paid marketing", "promotion"]
+    }
+  }
+}

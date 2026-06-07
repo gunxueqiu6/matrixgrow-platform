@@ -1,0 +1,9 @@
+node_modules/
+.env
+data/
+logs/
+cookies/
+n8n-data/
+n8n-workflows/
+*.db
+test-results/

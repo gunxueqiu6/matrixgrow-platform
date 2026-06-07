@@ -1,0 +1,66 @@
+{
+  "agents": {
+    "techBlog": {
+      "name": "Tech Blog Agent",
+      "model": "claude-3-5-sonnet",
+      "prompt_file": "ai-agents/prompts/tech-blog-agent.md",
+      "target_platforms": ["devto", "medium", "zhihu", "jianshu", "juejin", "csdn", "segmentfault", "oschina"],
+      "temperature": 0.7,
+      "max_tokens": 2000
+    },
+    "hardcoreCommunity": {
+      "name": "Hardcore Community Agent",
+      "model": "claude-3-5-sonnet",
+      "prompt_file": "ai-agents/prompts/hardcore-community-agent.md",
+      "target_platforms": ["v2ex", "reddit", "hackernews", "producthunt", "indiehackers", "sspai"],
+      "temperature": 0.8,
+      "max_tokens": 1500
+    },
+    "socialMedia": {
+      "name": "Social Media Agent",
+      "model": "gpt-4o",
+      "prompt_file": "ai-agents/prompts/social-media-agent.md",
+      "target_platforms": ["xiaohongshu", "instagram", "weibo", "bilibili"],
+      "temperature": 0.9,
+      "max_tokens": 800
+    },
+    "microBlog": {
+      "name": "Micro Blog Agent",
+      "model": "gpt-4o",
+      "prompt_file": "ai-agents/prompts/micro-blog-agent.md",
+      "target_platforms": ["x", "threads", "mastodon", "facebook"],
+      "temperature": 0.8,
+      "max_tokens": 500
+    },
+    "intercept": {
+      "name": "Intercept Agent",
+      "model": "claude-3-5-sonnet",
+      "prompt_file": "ai-agents/prompts/intercept-agent.md",
+      "monitored_platforms": ["x", "reddit", "v2ex", "zhihu", "xiaohongshu", "weibo", "juejin", "indiehackers"],
+      "temperature": 0.75,
+      "max_tokens": 1000
+    }
+  },
+  "vision": {
+    "card_generator": {
+      "style": "multi-color-block",
+      "sizes": {
+        "xiaohongshu": {"width": 1080, "height": 1440},
+        "x": {"width": 1200, "height": 675},
+        "general": {"width": 1200, "height": 630}
+      }
+    },
+    "flux_api": {
+      "enabled": true,
+      "model": "flux-pro",
+      "aspect_ratio": "16:9"
+    }
+  },
+  "distribution": {
+    "api_channels": ["x", "linkedin", "devto", "medium", "mastodon"],
+    "rpa_channels": ["xiaohongshu", "v2ex", "weixin", "hackernews", "zhihu", "jianshu", "instagram", "threads", "producthunt", "weibo", "bilibili", "facebook", "indiehackers", "sspai", "baijiahao", "souhu", "wangyi"],
+    "artipub_channels": ["juejin", "csdn", "segmentfault", "oschina", "toutiao"],
+    "retry_count": 3,
+    "retry_delay_ms": 5000
+  }
+}

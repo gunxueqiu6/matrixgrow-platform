@@ -1,0 +1,60 @@
+# Image styles configuration
+{
+  "styles": {
+    "emotional": {
+      "name": "Emotional/Marketing",
+      "background": ["#FF6B6B", "#4ECDC4", "#FFE66D", "#95E1D3"],
+      "textColor": "#FFFFFF",
+      "emojiSize": 80,
+      "decorative": "circles"
+    },
+    "professional": {
+      "name": "Professional/Tech",
+      "background": ["#2C3E50", "#34495E", "#2980B9", "#1ABC9C"],
+      "textColor": "#FFFFFF",
+      "emojiSize": 60,
+      "decorative": "grid"
+    },
+    "clean": {
+      "name": "Clean/Minimal",
+      "background": ["#FFFFFF", "#F8F9FA"],
+      "textColor": "#2D3436",
+      "emojiSize": 50,
+      "decorative": "none"
+    },
+    "dark": {
+      "name": "Dark Mode",
+      "background": ["#1a1a2e", "#16213e", "#0f3460"],
+      "textColor": "#FFFFFF",
+      "emojiSize": 70,
+      "decorative": "gradient"
+    }
+  },
+  "sizes": {
+    "xiaohongshu": {
+      "width": 1080,
+      "height": 1440,
+      "ratio": "3:4"
+    },
+    "x": {
+      "width": 1200,
+      "height": 675,
+      "ratio": "16:9"
+    },
+    "instagram": {
+      "width": 1080,
+      "height": 1080,
+      "ratio": "1:1"
+    },
+    "general": {
+      "width": 1200,
+      "height": 630,
+      "ratio": "1.91:1"
+    },
+    "devto": {
+      "width": 1000,
+      "height": 420,
+      "ratio": "2.38:1"
+    }
+  }
+}
