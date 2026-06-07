@@ -1,0 +1,76 @@
+{
+  "llm": {
+    "claude": {
+      "name": "Anthropic Claude",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "pricing": {
+        "input": 0.01102,
+        "output": 0.03268
+      },
+      "capabilities": ["text", "tool"],
+      "models": ["claude-sonnet-4-6", "claude-3-opus", "claude-3-sonnet", "claude-3-haiku"],
+      "defaultModel": "claude-sonnet-4-6"
+    },
+    "deepseek": {
+      "name": "DeepSeek",
+      "endpoint": "https://api.deepseek.com/v1/chat/completions",
+      "pricing": {
+        "input": 0.0015,
+        "output": 0.002
+      },
+      "capabilities": ["text"],
+      "models": ["deepseek-chat", "deepseek-coder"],
+      "defaultModel": "deepseek-chat"
+    },
+    "openai": {
+      "name": "OpenAI",
+      "endpoint": "https://api.openai.com/v1/chat/completions",
+      "pricing": {
+        "input": 0.015,
+        "output": 0.06
+      },
+      "capabilities": ["text", "tool", "image"],
+      "models": ["gpt-4", "gpt-4o", "gpt-3.5-turbo"],
+      "defaultModel": "gpt-4o"
+    },
+    "qwen": {
+      "name": "Qwen",
+      "endpoint": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+      "pricing": {
+        "input": 0.001,
+        "output": 0.002
+      },
+      "capabilities": ["text"],
+      "models": ["qwen-plus", "qwen-turbo", "qwen-max"],
+      "defaultModel": "qwen-plus"
+    }
+  },
+  "image": {
+    "fal": {
+      "name": "Fal.ai",
+      "endpoint": "https://fal.run/fal-ai/flux-pro",
+      "pricing": 0.05,
+      "capabilities": ["text-to-image", "image-to-image"],
+      "models": ["flux-pro", "flux-dev"],
+      "defaultModel": "flux-pro"
+    },
+    "replicate": {
+      "name": "Replicate",
+      "endpoint": "https://api.replicate.com/v1/predictions",
+      "pricing": 0.1,
+      "capabilities": ["text-to-image"],
+      "models": ["black-forest-labs/flux-pro"],
+      "defaultModel": "black-forest-labs/flux-pro"
+    }
+  },
+  "video": {
+    "heygen": {
+      "name": "HeyGen",
+      "endpoint": "https://api.heygen.com/v1/video",
+      "pricing": 2.0,
+      "capabilities": ["text-to-video", "talking-photo"],
+      "models": ["default"],
+      "defaultModel": "default"
+    }
+  }
+}

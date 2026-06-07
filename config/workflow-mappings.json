@@ -1,0 +1,152 @@
+{
+  "coze": {
+    "1": {
+      "type": "start",
+      "n8n": "n8n-nodes-base.webhook",
+      "label": "开始节点",
+      "notes": "转换为 n8n Webhook 触发节点"
+    },
+    "2": {
+      "type": "end",
+      "n8n": "n8n-nodes-base.respondToWebhook",
+      "label": "结束节点",
+      "notes": "转换为 n8n 响应 Webhook 节点"
+    },
+    "3": {
+      "type": "llm",
+      "n8n": "matrixgrow-nodes.llm",
+      "label": "LLM 节点",
+      "notes": "转换为 MatrixGrow LLM 节点，支持多模型选择"
+    },
+    "4": {
+      "type": "code",
+      "n8n": "n8n-nodes-base.code",
+      "label": "代码节点",
+      "notes": "转换为 n8n 代码节点"
+    },
+    "5": {
+      "type": "condition",
+      "n8n": "n8n-nodes-base.if",
+      "label": "条件分支",
+      "notes": "转换为 n8n IF 条件节点"
+    },
+    "6": {
+      "type": "loop",
+      "n8n": "n8n-nodes-base.splitInBatches",
+      "label": "循环节点",
+      "notes": "转换为 n8n 批量处理节点"
+    },
+    "7": {
+      "type": "http",
+      "n8n": "n8n-nodes-base.httpRequest",
+      "label": "HTTP 请求",
+      "notes": "转换为 n8n HTTP 请求节点"
+    },
+    "8": {
+      "type": "variable",
+      "n8n": "n8n-nodes-base.set",
+      "label": "变量设置",
+      "notes": "转换为 n8n 变量设置节点"
+    },
+    "58": {
+      "type": "json_stringify",
+      "n8n": "n8n-nodes-base.set",
+      "label": "JSON 序列化",
+      "notes": "在代码节点中执行 JSON.stringify"
+    },
+    "59": {
+      "type": "json_parse",
+      "n8n": "n8n-nodes-base.set",
+      "label": "JSON 解析",
+      "notes": "在代码节点中执行 JSON.parse"
+    },
+    "100": {
+      "type": "image_gen",
+      "n8n": "matrixgrow-nodes.imageGen",
+      "label": "图片生成",
+      "notes": "转换为 MatrixGrow 图片生成节点"
+    },
+    "101": {
+      "type": "video_gen",
+      "n8n": "matrixgrow-nodes.videoGen",
+      "label": "视频生成",
+      "notes": "转换为 MatrixGrow 视频生成节点"
+    }
+  },
+  "dify": {
+    "start": {
+      "type": "start",
+      "n8n": "n8n-nodes-base.webhook",
+      "label": "开始节点",
+      "notes": "转换为 n8n Webhook 触发节点"
+    },
+    "end": {
+      "type": "end",
+      "n8n": "n8n-nodes-base.respondToWebhook",
+      "label": "结束节点",
+      "notes": "转换为 n8n 响应 Webhook 节点"
+    },
+    "llm": {
+      "type": "llm",
+      "n8n": "matrixgrow-nodes.llm",
+      "label": "LLM 节点",
+      "notes": "转换为 MatrixGrow LLM 节点，支持多模型选择"
+    },
+    "code": {
+      "type": "code",
+      "n8n": "n8n-nodes-base.code",
+      "label": "代码节点",
+      "notes": "转换为 n8n 代码节点"
+    },
+    "if-else": {
+      "type": "condition",
+      "n8n": "n8n-nodes-base.if",
+      "label": "条件分支",
+      "notes": "转换为 n8n IF 条件节点"
+    },
+    "iteration": {
+      "type": "loop",
+      "n8n": "n8n-nodes-base.splitInBatches",
+      "label": "循环节点",
+      "notes": "转换为 n8n 批量处理节点"
+    },
+    "http-request": {
+      "type": "http",
+      "n8n": "n8n-nodes-base.httpRequest",
+      "label": "HTTP 请求",
+      "notes": "转换为 n8n HTTP 请求节点"
+    },
+    "variable-assigner": {
+      "type": "variable",
+      "n8n": "n8n-nodes-base.set",
+      "label": "变量设置",
+      "notes": "转换为 n8n 变量设置节点"
+    },
+    "knowledge-retrieval": {
+      "type": "knowledge",
+      "n8n": "n8n-nodes-base.code",
+      "label": "知识库检索",
+      "notes": "需要手动配置知识库连接"
+    },
+    "tool": {
+      "type": "plugin",
+      "n8n": "n8n-nodes-base.code",
+      "label": "插件节点",
+      "notes": "尝试映射到 n8n 集成节点，否则需手动配置"
+    }
+  },
+  "variableSyntax": {
+    "coze": {
+      "pattern": "\\{\\{([^}]+)\\}\\}",
+      "transform": "n8n"
+    },
+    "dify": {
+      "pattern": "\\{\\{#([^}]+)#\\}\\}",
+      "transform": "n8n"
+    },
+    "n8n": {
+      "pattern": "\\{\\{\\s*\\$([^}]+)\\}\\}",
+      "format": "{{ $json.$1 }}"
+    }
+  }
+}

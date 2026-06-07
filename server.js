@@ -17,16 +17,22 @@ const { InfographicGenerator } = require('./vision-generator/infographic-generat
 const { DatabaseManager } = require('./data/database');
 const { Logger } = require('./utils/logger');
 const { RateLimiter, PublishingQueue } = require('./utils/rate-limiter');
-const { optionalAuth } = require('./middleware/auth');
+const { optionalAuth, authenticate } = require('./middleware/auth');
 const { createAuthRouter } = require('./routes/auth');
 const { createSaasRouter } = require('./routes/saas');
 const { createWebhookRouter } = require('./routes/webhooks');
 const { createPaymentRouter } = require('./routes/payment');
+const { createWorkflowImportRouter } = require('./routes/workflow-import');
+const { createWorkflowsRouter } = require('./routes/workflows');
 const { AgentHandler } = require('./utils/agent-handler');
+const { FalAdapter } = require('./adapters/image/fal-adapter');
+const { ReplicateAdapter } = require('./adapters/image/replicate-adapter');
+const { HeygenAdapter } = require('./adapters/video/heygen-adapter');
+const { LLMAdapter } = require('./utils/llm-adapter');
 const { AgentActions } = require('./utils/agent-actions');
 const { WebhookDispatcher } = require('./utils/webhook-dispatcher');
 const { PaymentService } = require('./utils/payment');
-const { LLMAdapter } = require('./utils/llm-adapter');
+const { UsageMeter } = require('./utils/usage-meter');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -67,6 +73,9 @@ const artipubPublisher = new ArtipubPublisher();
 
 // Initialize Agent, Webhook, and Payment modules
 const llmAdapter = new LLMAdapter();
+const falAdapter = new FalAdapter(process.env.FAL_API_KEY);
+const replicateAdapter = new ReplicateAdapter(process.env.REPLICATE_API_KEY);
+const heygenAdapter = new HeygenAdapter(process.env.HEYGEN_API_KEY);
 const agentActions = new AgentActions({ db, textRewriter, apiPublisher, rpaPublisher, artipubPublisher, llmAdapter });
 const agentHandler = new AgentHandler({ db, llmAdapter, agentActions });
 agentHandler.initialize();   // 加载 Agent 系统提示词
@@ -690,6 +699,135 @@ app.use('/api', createWebhookRouter(db, webhookDispatcher));
 
 // Payment Routes
 app.use('/api', createPaymentRouter(db, paymentService));
+
+// Workflow Import & Management Routes
+app.use('/api/workflow', createWorkflowImportRouter(db));
+app.use('/api/workflows', createWorkflowsRouter(db));
+
+// ========== AI Gateway Endpoints ==========
+
+// POST /api/ai/llm - LLM 调用（已有，通过 llmAdapter）
+app.post('/api/ai/llm', authenticate, async (req, res) => {
+  try {
+    const { prompt, provider, model, system_prompt, temperature = 0.7, max_tokens = 2048 } = req.body;
+
+    if (!prompt) {
+      return res.status(400).json({ error: '缺少 prompt' });
+    }
+
+    const result = await llmAdapter.generate(prompt, {
+      provider,
+      model,
+      systemPrompt: system_prompt,
+      temperature,
+      maxTokens: max_tokens
+    });
+
+    // 记录使用量
+    if (result.success) {
+      await UsageMeter.recordUsage(
+        db, 
+        req.user.userId, 
+        'text', 
+        provider || llmAdapter.defaultProvider, 
+        model || 'default', 
+        (result.text?.length || 0) / 1000,
+        null
+      );
+    }
+
+    res.json(result);
+  } catch (error) {
+    logger.errorWithStack(error, 'LLM API 错误');
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// POST /api/ai/image - 图像生成
+app.post('/api/ai/image', authenticate, async (req, res) => {
+  try {
+    const { prompt, provider = 'fal', width = 1024, height = 768, num_images = 1, negative_prompt = '' } = req.body;
+
+    if (!prompt) {
+      return res.status(400).json({ error: '缺少 prompt' });
+    }
+
+    let result;
+    
+    if (provider === 'fal') {
+      result = await falAdapter.generateImage(prompt, { width, height, numImages: num_images, negativePrompt: negative_prompt });
+    } else if (provider === 'replicate') {
+      result = await replicateAdapter.generateImage(prompt, { width, height, numImages: num_images, negativePrompt: negative_prompt });
+    } else {
+      return res.status(400).json({ error: '不支持的图像生成提供商' });
+    }
+
+    // 记录使用量
+    if (result.success) {
+      await UsageMeter.recordUsage(
+        db, 
+        req.user.userId, 
+        'image', 
+        provider, 
+        'default', 
+        num_images,
+        null
+      );
+    }
+
+    res.json(result);
+  } catch (error) {
+    logger.errorWithStack(error, 'Image API 错误');
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// POST /api/ai/video - 视频生成
+app.post('/api/ai/video', authenticate, async (req, res) => {
+  try {
+    const { script, provider = 'heygen', avatar_id, voice_id } = req.body;
+
+    if (!script) {
+      return res.status(400).json({ error: '缺少 script' });
+    }
+
+    if (provider !== 'heygen') {
+      return res.status(400).json({ error: '不支持的视频生成提供商' });
+    }
+
+    const result = await heygenAdapter.generateVideo(script, { avatarId: avatar_id, voiceId: voice_id });
+
+    // 记录使用量（预计 1 分钟）
+    if (result.success) {
+      await UsageMeter.recordUsage(
+        db, 
+        req.user.userId, 
+        'video', 
+        provider, 
+        'default', 
+        1, // 1 分钟
+        null
+      );
+    }
+
+    res.json(result);
+  } catch (error) {
+    logger.errorWithStack(error, 'Video API 错误');
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// GET /api/ai/video/:videoId/status - 查询视频生成状态
+app.get('/api/ai/video/:videoId/status', authenticate, async (req, res) => {
+  try {
+    const { videoId } = req.params;
+    const result = await heygenAdapter.getVideoStatus(videoId);
+    res.json(result);
+  } catch (error) {
+    logger.errorWithStack(error, 'Video Status API 错误');
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
 
 // Workflow execution tracking
 app.post('/api/workflow/execute', optionalAuth, async (req, res) => {

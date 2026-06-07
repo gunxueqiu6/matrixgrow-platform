@@ -21,7 +21,7 @@
     .btn-primary { background: #00d4ff; color: #000; }
     .btn-primary:hover { background: #00b8e6; transform: translateY(-1px); }
     .btn-secondary { background: #333; color: #fff; }
-    .tier-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .tier-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
     .tier-card { background: #1a1a2e; padding: 30px; border-radius: 16px; border: 2px solid #333; position: relative; }
     .tier-card.popular { border-color: #00d4ff; }
     .tier-card.popular::before {
@@ -46,6 +46,7 @@
     .message { padding: 12px; border-radius: 8px; margin-bottom: 16px; }
     .message.success { background: rgba(0, 212, 255, 0.1); border: 1px solid #00d4ff; color: #00d4ff; }
     .message.error { background: rgba(255, 0, 0, 0.1); border: 1px solid #ff4444; color: #ff4444; }
+    .hidden { display: none !important; }
     .current-tier { display: flex; justify-content: space-between; align-items: center; background: #0f0f23; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
     .current-tier-info h3 { font-size: 20px; margin-bottom: 6px; }
     .current-tier-info p { color: #888; font-size: 14px; }
@@ -99,8 +100,8 @@
       </div>
 
       <div class="tabs">
-        <button class="tab active" onclick="showTab('plans')">套餐对比</button>
-        <button class="tab" onclick="showTab('orders')">订单历史</button>
+        <button class="tab active" onclick="showTab('plans', event)">套餐对比</button>
+        <button class="tab" onclick="showTab('orders', event)">订单历史</button>
       </div>
 
       <div id="plans-tab">
@@ -128,15 +129,15 @@
       
       <h3 style="margin-bottom: 12px;">选择支付方式</h3>
       <div class="payment-methods">
-        <div class="payment-method selected" onclick="selectPayment('alipay')">
+        <div class="payment-method selected" onclick="selectPayment('alipay', event)">
           <div class="payment-method-icon">🐜</div>
           <div class="payment-method-name">支付宝</div>
         </div>
-        <div class="payment-method" onclick="selectPayment('wechat')">
+        <div class="payment-method" onclick="selectPayment('wechat', event)">
           <div class="payment-method-icon">💬</div>
           <div class="payment-method-name">微信支付</div>
         </div>
-        <div class="payment-method" onclick="selectPayment('paypal')">
+        <div class="payment-method" onclick="selectPayment('paypal', event)">
           <div class="payment-method-icon">🅿️</div>
           <div class="payment-method-name">PayPal</div>
         </div>
@@ -185,13 +186,13 @@
     }
 
     // 切换标签
-    function showTab(tab) {
+    function showTab(tab, e) {
       document.querySelectorAll('#plans-tab, #orders-tab').forEach(el => el.classList.add('hidden'));
       document.getElementById(`${tab}-tab`).classList.remove('hidden');
-      
+
       document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-      event.target.classList.add('active');
-      
+      if (e && e.target) e.target.classList.add('active');
+
       if (tab === 'orders') loadOrders();
     }
 
@@ -207,7 +208,8 @@
         const tierNames = {
           free: '免费版',
           pro: 'Pro 版',
-          promax: 'Pro Max 版'
+          promax: 'Pro Max 版',
+          studio: 'Studio 版'
         };
 
         document.getElementById('current-subscription').innerHTML = `
@@ -217,7 +219,7 @@
               <p>已绑定 ${sub.platformsUsed} 个平台 / 最多 ${sub.platformLimit} 个</p>
               <p style="margin-top: 4px;">每平台最多 ${sub.accountsPerPlatform} 个账号</p>
             </div>
-            ${sub.tier !== 'promax' ? `<button class="btn btn-primary" onclick="showUpgrade('promax')">升级到 Pro Max</button>` : ''}
+            ${sub.tier === 'studio' ? '' : `<button class="btn btn-primary" onclick="showUpgrade('studio')">升级到 Studio</button>`}
           </div>
         `;
 
@@ -225,7 +227,7 @@
         const tiers = await tiersRes.json();
 
         const grid = tiers.tiers.map(t => `
-          <div class="tier-card ${t.id === 'pro' ? 'popular' : ''}">
+          <div class="tier-card ${t.id === 'studio' ? 'popular' : ''}">
             <h3>${t.name}</h3>
             <div style="color: #888; font-size: 14px; margin-bottom: 8px;">${t.description}</div>
             <div class="tier-price">
@@ -235,11 +237,11 @@
             <ul class="tier-features">
               ${t.features.map(f => `<li>${f}</li>`).join('')}
             </ul>
-            ${sub.tier === t.id 
+            ${sub.tier === t.id
               ? `<button class="btn btn-secondary" style="width: 100%;" disabled>当前版本</button>`
               : t.id === 'free'
                 ? ''
-                : `<button class="btn ${t.id === 'promax' ? 'btn-primary' : 'btn-primary'}" style="width: 100%;" onclick="showUpgrade('${t.id}')">
+                : `<button class="btn btn-primary" style="width: 100%;" onclick="showUpgrade('${t.id}')">
                     ${sub.tier === 'free' ? '立即购买' : '升级'}
                   </button>`
             }
@@ -255,9 +257,9 @@
 
     // 显示升级确认
     function showUpgrade(tier) {
-      const tierNames = { pro: 'Pro 版', promax: 'Pro Max 版' };
-      const tierPrices = { pro: 99, promax: 299 };
-      
+      const tierNames = { pro: 'Pro 版', promax: 'Pro Max 版', studio: 'Studio 版' };
+      const tierPrices = { pro: 99, promax: 299, studio: 999 };
+
       pendingOrder = { tier };
 
       document.getElementById('payment-details').innerHTML = `
@@ -270,10 +272,13 @@
     }
 
     // 选择支付方式
-    function selectPayment(method) {
+    function selectPayment(method, e) {
       selectedPaymentMethod = method;
       document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
-      event.target.closest('.payment-method').classList.add('selected');
+      if (e && e.target) {
+        const el = e.target.closest('.payment-method');
+        if (el) el.classList.add('selected');
+      }
     }
 
     // 确认支付
@@ -298,7 +303,7 @@
           showMessage('订单创建成功！即将跳转支付...');
           
           // 获取支付链接
-          const urlRes = await fetch(`${API_BASE}/payment/url?order_no=${data.order_no}&channel=${selectedPaymentMethod}`, {
+          const urlRes = await fetch(`${API_BASE}/payment/url?orderNo=${data.orderNo}&channel=${selectedPaymentMethod}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           
