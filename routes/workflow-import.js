@@ -110,6 +110,16 @@ function createWorkflowImportRouter(db) {
         return res.status(400).json({ error: convertResult.error });
       }
 
+      // 推送到 n8n
+      let n8nWorkflowId = null;
+      try {
+        const n8nResult = await importer.pushToN8n(convertResult.n8nWorkflow);
+        n8nWorkflowId = n8nResult.id;
+      } catch (n8nError) {
+        // n8n 推送失败不阻塞，工作流仍保存到本地
+        console.warn('推送 n8n 失败（已保存到本地）:', n8nError.message);
+      }
+
       // 保存到用户工作流表
       const userWorkflowId = await db.createUserWorkflow(
         req.user.userId,
@@ -117,7 +127,7 @@ function createWorkflowImportRouter(db) {
           name: name || '导入的工作流',
           source_format: session.source,
           original_json: session.ir,
-          n8n_workflow_id: null, // 这里应该调用 n8n API 实际创建
+          n8n_workflow_id: n8nWorkflowId,
           node_mappings: session.nodeMappings
         }
       );
@@ -128,7 +138,8 @@ function createWorkflowImportRouter(db) {
       res.json({
         success: true,
         userWorkflowId,
-        message: '工作流安装成功'
+        n8nWorkflowId,
+        message: n8nWorkflowId ? '工作流已安装到 n8n' : '工作流已保存（n8n 推送待重试）'
       });
     } catch (error) {
       res.status(500).json({ error: error.message });

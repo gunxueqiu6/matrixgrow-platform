@@ -177,6 +177,120 @@ async function runTests() {
     assert.strictEqual(config.price, 99);
   });
 
+  await test('PaymentService should return null for invalid tier', () => {
+    const service = new PaymentService({ db });
+    const config = service.getTierConfig('enterprise');
+    assert.strictEqual(config, null);
+  });
+
+  console.log('\n=== Testing LLMAdapter ===');
+  const { LLMAdapter } = require('../utils/llm-adapter');
+
+  await test('LLMAdapter should initialize with default DeepSeek provider', () => {
+    const adapter = new LLMAdapter();
+    assert.strictEqual(adapter.config.provider, 'deepseek');
+    assert.strictEqual(adapter.config.model, 'deepseek-chat');
+  });
+
+  await test('LLMAdapter should support all 4 providers', () => {
+    const providers = LLMAdapter.getSupportedProviders();
+    assert(providers.includes('claude'));
+    assert(providers.includes('deepseek'));
+    assert(providers.includes('openai'));
+    assert(providers.includes('qwen'));
+  });
+
+  await test('LLMAdapter should return provider template', () => {
+    const template = LLMAdapter.getProviderTemplate('deepseek');
+    assert.ok(template);
+    assert.strictEqual(template.model, 'deepseek-chat');
+  });
+
+  await test('LLMAdapter should return null for unknown provider template', () => {
+    const template = LLMAdapter.getProviderTemplate('unknown');
+    assert.strictEqual(template, null);
+  });
+
+  await test('LLMAdapter complete() should fail without API key', async () => {
+    const adapter = new LLMAdapter({ provider: 'deepseek', apiKey: '' });
+    try {
+      await adapter.complete([{ role: 'user', content: 'hello' }]);
+      assert.fail('Should have thrown');
+    } catch (error) {
+      assert(error.message.includes('API key not configured'));
+    }
+  });
+
+  await test('LLMAdapter updateConfig should merge settings', () => {
+    const adapter = new LLMAdapter();
+    adapter.updateConfig({ model: 'deepseek-chat-v2', temperature: 0.5 });
+    assert.strictEqual(adapter.config.model, 'deepseek-chat-v2');
+  });
+
+  console.log('\n=== Testing TierGuard ===');
+  const { TierGuard } = require('../utils/tier-guard');
+  const tiers = TierGuard.getTierLimits();
+
+  await test('TierGuard should define free tier', () => {
+    assert.ok(tiers.free);
+    assert.strictEqual(tiers.free.platforms, 3);
+    assert.strictEqual(tiers.free.accountsPerPlatform, 1);
+  });
+
+  await test('TierGuard should define pro tier', () => {
+    assert.ok(tiers.pro);
+    assert.strictEqual(tiers.pro.platforms, 27);
+    assert.strictEqual(tiers.pro.accountsPerPlatform, 1);
+  });
+
+  await test('TierGuard should define promax tier', () => {
+    assert.ok(tiers.promax);
+    assert.strictEqual(tiers.promax.platforms, 27);
+    assert.strictEqual(tiers.promax.accountsPerPlatform, 5);
+  });
+
+  await test('TierGuard free tier should have no whiteLabel', () => {
+    assert.strictEqual(tiers.free.whiteLabel, false);
+    assert.strictEqual(tiers.pro.whiteLabel, false);
+  });
+
+  await test('TierGuard pro > free for all limits', () => {
+    assert(tiers.pro.platforms > tiers.free.platforms);
+    assert(tiers.pro.aiImagesPerMonth > tiers.free.aiImagesPerMonth);
+    assert(tiers.pro.workflowLimit > tiers.free.workflowLimit);
+    assert(tiers.pro.scheduledTasks > tiers.free.scheduledTasks);
+  });
+
+  await test('TierGuard promax >= pro for all limits', () => {
+    assert(tiers.promax.platforms >= tiers.pro.platforms);
+    assert(tiers.promax.aiImagesPerMonth >= tiers.pro.aiImagesPerMonth);
+    assert(tiers.promax.workflowLimit >= tiers.pro.workflowLimit);
+    assert(tiers.promax.apiKeys >= tiers.pro.apiKeys);
+  });
+
+  console.log('\n=== Testing Auth & Password Hashing ===');
+  const bcrypt = require('bcryptjs');
+
+  await test('bcrypt should hash and verify password', async () => {
+    const password = 'testPassword123';
+    const hash = await bcrypt.hash(password, 10);
+    assert.notStrictEqual(hash, password);
+    const match = await bcrypt.compare(password, hash);
+    assert.strictEqual(match, true);
+  });
+
+  await test('bcrypt should reject wrong password', async () => {
+    const hash = await bcrypt.hash('correct', 10);
+    const match = await bcrypt.compare('wrong', hash);
+    assert.strictEqual(match, false);
+  });
+
+  await test('bcrypt should generate unique hashes for same password', async () => {
+    const h1 = await bcrypt.hash('password', 10);
+    const h2 = await bcrypt.hash('password', 10);
+    assert.notStrictEqual(h1, h2);
+  });
+
   // Cleanup
   if (db) {
     try {

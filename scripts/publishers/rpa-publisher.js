@@ -3,20 +3,54 @@
  * Platforms: 小红书, V2EX, 微信
  */
 
-const { chromium } = require('playwright');
+const { getCookiesPath } = require('../../utils/app-paths');
+const { execSync } = require('child_process');
 
 class RPAPublisher {
   constructor(config = {}) {
     this.config = {
       headless: config.headless ?? true,
-      cookiesPath: config.cookiesPath || './cookies',
+      cookiesPath: config.cookiesPath || getCookiesPath(),
       retryCount: config.retryCount || 3,
       ...config
     };
     this.browser = null;
+    this._playwrightInstalled = null;
+  }
+
+  /**
+   * Check if Playwright browsers are installed
+   */
+  isPlaywrightInstalled() {
+    if (this._playwrightInstalled !== null) {
+      return this._playwrightInstalled;
+    }
+    try {
+      // Try to require playwright - if it exists, check browser path
+      require('playwright');
+      this._playwrightInstalled = true;
+    } catch (e) {
+      this._playwrightInstalled = false;
+    }
+    return this._playwrightInstalled;
+  }
+
+  /**
+   * Install Playwright browsers if needed
+   */
+  async installPlaywright() {
+    if (this.isPlaywrightInstalled()) {
+      return;
+    }
+    throw new Error(
+      'Playwright browsers not installed. Please run: npx playwright install chromium\n' +
+      'This is required for RPA publishing features.'
+    );
   }
 
   async initialize() {
+    await this.installPlaywright();
+    const { chromium } = require('playwright');
     if (!this.browser) {
       this.browser = await chromium.launch({
         headless: this.config.headless,

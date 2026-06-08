@@ -7,3 +7,6 @@ n8n-data/
 n8n-workflows/
 *.db
 test-results/
+dist/
+build/
+*.exe

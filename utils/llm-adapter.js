@@ -129,6 +129,27 @@ class LLMAdapter {
         model: options.model || this.config.model
       };
     } catch (error) {
+      const statusCode = error.response?.status;
+      const providerName = provider.name;
+
+      if (statusCode === 401 || statusCode === 403) {
+        return {
+          success: false,
+          error: `${providerName} API Key 无效或未配置，请在"设置 → LLM 模型"中配置有效的 API Key`,
+          code: 'AUTH_ERROR',
+          provider: this.config.provider
+        };
+      }
+
+      if (statusCode === 429) {
+        return {
+          success: false,
+          error: `${providerName} API 调用次数超限，请稍后重试或切换其他模型`,
+          code: 'RATE_LIMIT',
+          provider: this.config.provider
+        };
+      }
+
       return {
         success: false,
         error: error.response?.data?.error?.message || error.message,

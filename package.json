@@ -1,15 +1,27 @@
 {
   "name": "matrixgrow",
   "version": "1.0.0",
-  "description": "AI 独立开发者增长引擎 - 全网 AI 分发与截流系统",
-  "main": "server.js",
+  "description": "AI Content Distribution & Traffic Interception Engine — Import Coze/Dify workflows to n8n, publish to 27+ platforms, AI rewriting + smart reply interception",
+  "author": "MatrixGrow <hello@matrixgrow.cn> (https://matrixgrow.cn)",
+  "license": "MIT",
+  "homepage": "https://matrixgrow.cn",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gunxueqiu6/matrixgrow-platform.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gunxueqiu6/matrixgrow-platform/issues"
+  },
+  "main": "electron/main.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
     "demo": "node demo.js",
     "test": "node tests/index.js",
     "install:playwright": "npx playwright install chromium",
-    "bootstrap:cookies": "node scripts/bootstrap-cookies.js"
+    "bootstrap:cookies": "node scripts/bootstrap-cookies.js",
+    "electron": "electron .",
+    "build:exe": "node scripts/build-exe.mjs"
   },
   "dependencies": {
     "@napi-rs/canvas": "^1.0.0",
@@ -23,6 +35,9 @@
     "sqlite3": "^5.1.6"
   },
   "devDependencies": {
+    "@electron/rebuild": "^3.7.1",
+    "electron": "^34.5.8",
+    "electron-builder": "^25.1.8",
     "eslint": "^8.55.0",
     "node-gyp": "^12.4.0"
   }

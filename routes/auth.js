@@ -11,7 +11,8 @@ function createAuthRouter(db) {
   // POST /api/auth/register
   router.post('/register', async (req, res) => {
     try {
-      const { email, password, displayName } = req.body;
+      const { email, password, displayName, display_name } = req.body;
+      const name = displayName || display_name || email.split('@')[0];
 
       if (!email || !password) {
         return res.status(400).json({ error: 'Email and password are required' });
@@ -27,7 +28,7 @@ function createAuthRouter(db) {
       }
 
       const passwordHash = await bcrypt.hash(password, 10);
-      const userId = await db.createUser(email, passwordHash, displayName || email.split('@')[0]);
+      const userId = await db.createUser(email, passwordHash, name);
 
       // 自动创建订阅（free tier）
       await db.createSubscription(userId, 'free');
@@ -40,7 +41,7 @@ function createAuthRouter(db) {
       res.status(201).json({
         success: true,
         token,
-        user: { id: userId, email, displayName: displayName || email.split('@')[0], role: 'user' }
+        user: { id: userId, email, displayName: name, role: 'user' }
       });
     } catch (error) {
       res.status(500).json({ error: error.message });

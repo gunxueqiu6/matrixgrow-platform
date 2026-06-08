@@ -5,12 +5,13 @@
 
 const fs = require('fs');
 const path = require('path');
+const { getLogsPath } = require('./app-paths');
 
 class Logger {
   constructor(config = {}) {
     this.config = {
       level: config.level || process.env.LOG_LEVEL || 'info',
-      logDir: config.logDir || './logs',
+      logDir: config.logDir || getLogsPath(),
       maxFileSize: config.maxFileSize || 10 * 1024 * 1024, // 10MB
       maxFiles: config.maxFiles || 5,
       consoleEnabled: config.consoleEnabled !== false,

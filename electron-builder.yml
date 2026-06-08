@@ -1,0 +1,42 @@
+appId: com.matrixgrow.app
+productName: MatrixGrow
+directories:
+  output: dist
+win:
+  target: nsis
+  icon: frontend/favicon.ico
+  arch:
+    - x64
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  installerIcon: frontend/favicon.ico
+  uninstallerIcon: frontend/favicon.ico
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: "MatrixGrow"
+asarUnpack:
+  - "node_modules/sqlite3/**"
+  - "node_modules/@napi-rs/canvas/**"
+files:
+  - electron/**/*
+  - frontend/**/*
+  - routes/**/*
+  - utils/**/*
+  - data/**/*
+  - scripts/**/*
+  - ai-agents/**/*
+  - config/**/*
+  - middleware/**/*
+  - adapters/**/*
+  - vision-generator/**/*
+  - n8n-nodes/**/*
+  - server.js
+  - package.json
+  - node_modules/**/*
+  - "!node_modules/**/*.{md,MD,txt,TXT}"
+  - "!node_modules/**/test{,s}/**"
+  - "!node_modules/**/tests/**"
+  - "!node_modules/**/.git/**"
+  - "!node_modules/**/*.tsbuildinfo"
+compression: maximum

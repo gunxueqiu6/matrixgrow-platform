@@ -2,6 +2,14 @@ const express = require('express');
 const path = require('path');
 require('dotenv').config();
 
+// App paths
+const { setElectronMode, isElectron } = require('./utils/app-paths');
+const isElectronMode = process.env.ELECTRON_RUN === '1';
+
+if (isElectronMode) {
+  setElectronMode(true, process.env.USER_DATA_PATH);
+}
+
 // Core modules
 const { APIPublisher } = require('./scripts/publishers/api-publisher');
 const { RPAPublisher } = require('./scripts/publishers/rpa-publisher');
@@ -43,6 +51,7 @@ app.use(express.static(path.join(__dirname, 'frontend')));
 // Initialize new modules
 const logger = new Logger();
 const db = new DatabaseManager();
+app.locals.db = db;  // TierGuard 中间件通过 req.app.locals.db 访问
 const rateLimiter = new RateLimiter();
 const publishingQueue = new PublishingQueue({ 
   rateLimiter, 
@@ -52,7 +61,6 @@ const publishingQueue = new PublishingQueue({
 // Initialize core modules
 const apiPublisher = new APIPublisher();
 const rpaPublisher = new RPAPublisher({
-  cookiesPath: './cookies',
   headless: process.env.PLAYWRIGHT_HEADLESS !== 'false'
 });
 const keywordMonitor = new KeywordMonitor({
@@ -890,13 +898,40 @@ app.get('/', (req, res) => {
 });
 
 // 启动服务器
-app.listen(PORT, async () => {
-  console.log(`
+async function startServer() {
+  // 初始化数据库
+  try {
+    await db.initialize();
+    logger.info('数据库已初始化');
+  } catch (e) {
+    logger.error('数据库初始化失败', { error: e.message });
+  }
+
+  // 初始化改写器
+  try {
+    await textRewriter.initialize();
+    logger.info('AI 改写器已初始化');
+  } catch (e) {
+    logger.warn('AI 改写器初始化失败', { error: e.message });
+  }
+
+  const listenPort = isElectronMode ? 0 : PORT;
+  const server = app.listen(listenPort, '127.0.0.1', async () => {
+    const actualPort = server.address().port;
+
+    if (isElectronMode) {
+      // Electron 模式：通过 IPC 发送端口
+      if (process.send) {
+        process.send({ port: actualPort });
+      }
+    } else {
+      // 普通模式：打印启动信息
+      console.log(`
 ╔══════════════════════════════════════════════════════════════════╗
 ║                                                                  ║
 ║   MatrixGrow - AI 增长引擎 (Agent+支付+Webhook版)                ║
 ║                                                                  ║
-║   服务器已启动: http://localhost:${PORT}                           ║
+║   服务器已启动: http://localhost:${actualPort}                     ║
 ║                                                                  ║
 ║   API 文档:                                                      ║
 ║   认证相关:                                                       ║
@@ -952,43 +987,34 @@ app.listen(PORT, async () => {
 ║   - GET  /api/stats                - 统计数据                      ║
 ║                                                                  ║
 ╚══════════════════════════════════════════════════════════════════╝
-  `);
+      `);
+    }
 
-  // 初始化数据库
-  try {
-    await db.initialize();
-    logger.info('数据库已初始化');
-  } catch (e) {
-    logger.error('数据库初始化失败', { error: e.message });
-  }
+    // 启动定时监控
+    if (process.env.ENABLE_MONITOR === 'true') {
+      startScheduledMonitor();
+    } else if (!isElectronMode) {
+      logger.info('定时监控未启动 (设置 ENABLE_MONITOR=true 启用)');
+    }
+  });
+}
 
-  // 初始化改写器
-  try {
-    await textRewriter.initialize();
-    logger.info('AI 改写器已初始化');
-  } catch (e) {
-    logger.warn('AI 改写器初始化失败', { error: e.message });
-  }
-
-  // 启动定时监控
-  if (process.env.ENABLE_MONITOR === 'true') {
-    startScheduledMonitor();
-  } else {
-    logger.info('定时监控未启动 (设置 ENABLE_MONITOR=true 启用)');
-  }
-});
+startServer();
 
 // Cleanup on shutdown
-process.on('SIGINT', async () => {
+async function gracefulShutdown() {
   logger.info('正在关闭服务器...');
-  
+
   if (monitorInterval) {
     clearInterval(monitorInterval);
   }
-  
+
   await rpaPublisher.close();
   await db.close();
-  
+
   logger.info('服务器已关闭');
   process.exit(0);
-});
+}
+
+process.on('SIGINT', gracefulShutdown);
+process.on('SIGTERM', gracefulShutdown);

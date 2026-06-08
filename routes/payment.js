@@ -13,8 +13,16 @@ function createPaymentRouter(db, paymentService) {
     try {
       const { channel, tier } = req.body;
 
+      const validChannels = ['paypal', 'wechat', 'alipay'];
+      const validTiers = ['pro', 'promax'];
       if (!channel || !tier) {
         return res.status(400).json({ error: '缺少必要参数' });
+      }
+      if (!validChannels.includes(channel)) {
+        return res.status(400).json({ error: `不支持的支付渠道: ${channel}` });
+      }
+      if (!validTiers.includes(tier)) {
+        return res.status(400).json({ error: `无效的套餐: ${tier}` });
       }
 
       const result = await paymentService.createOrder(req.user.userId, channel, tier);
