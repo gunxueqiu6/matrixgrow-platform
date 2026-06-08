@@ -16,9 +16,9 @@ try {
   const nodeVersion = execSync('node --version', { encoding: 'utf8' }).trim();
   console.log(`Node.js 版本: ${nodeVersion}`);
 
-  console.log('\n[2/4] 安装生产依赖...');
+  console.log('\n[2/4] 安装依赖...');
   process.chdir(projectRoot);
-  execSync('npm ci --production', { stdio: 'inherit' });
+  execSync('npm ci', { stdio: 'inherit' });
 
   console.log('\n[3/4] 重建原生模块...');
   try {
