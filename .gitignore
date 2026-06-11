@@ -10,3 +10,16 @@ test-results/
 dist/
 build/
 *.exe
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log

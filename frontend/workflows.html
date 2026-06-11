@@ -4,513 +4,374 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MatrixGrow - 工作流商店</title>
+  <link rel="stylesheet" href="/css/base.css">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f0f23; color: #fff; }
-    .app { display: flex; min-height: 100vh; }
-    .sidebar { width: 260px; background: #1a1a2e; padding: 20px; display: flex; flex-direction: column; }
-    .logo { font-size: 24px; font-weight: bold; margin-bottom: 40px; color: #00d4ff; text-decoration: none; }
-    .nav-item { padding: 12px 16px; margin: 4px 0; border-radius: 8px; cursor: pointer; transition: background 0.2s; color: #888; }
-    .nav-item:hover, .nav-item.active { background: #16213e; color: #fff; }
-    .main { flex: 1; padding: 30px; overflow-y: auto; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-    .header h1 { font-size: 28px; }
-    .tier-badge { padding: 6px 16px; border-radius: 20px; font-size: 14px; font-weight: bold; }
-    .tier-free { background: #333; color: #888; }
-    .tier-pro { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; }
-    .tier-promax { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: #fff; }
-
-    .card { background: #1a1a2e; padding: 24px; border-radius: 16px; margin-bottom: 20px; }
-    .card h2 { margin-bottom: 20px; font-size: 18px; }
-    .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
-    .btn-primary { background: #00d4ff; color: #000; }
-    .btn-primary:hover { background: #00b8e6; }
-    .btn-secondary { background: #333; color: #fff; }
-    .btn-secondary:hover { background: #444; }
-    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-    .tab { padding: 10px 20px; background: #0f0f23; border: none; border-radius: 8px; color: #888; cursor: pointer; }
-    .tab.active { background: #00d4ff; color: #000; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-    .template-card { background: #0f0f23; border-radius: 12px; overflow: hidden; transition: transform 0.2s; }
-    .template-card:hover { transform: translateY(-2px); }
-    .template-preview { height: 150px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); display: flex; align-items: center; justify-content: center; font-size: 48px; }
-    .template-body { padding: 16px; }
-    .template-title { font-size: 16px; font-weight: 500; margin-bottom: 8px; }
-    .template-desc { font-size: 14px; color: #888; margin-bottom: 12px; }
-    .template-meta { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-    .meta-tag { padding: 4px 10px; background: #1a1a2e; border-radius: 20px; font-size: 12px; color: #888; }
-    .price-tag { font-weight: bold; color: #00d4ff; }
-    .price-free { color: #4ade80; }
+    .template-card {
+      background: var(--color-bg-secondary);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+      border: 1px solid var(--color-border);
+    }
+    .template-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--color-border-hover);
+    }
+    .template-preview {
+      height: 160px;
+      background: var(--gradient-brand);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      opacity: 0.9;
+    }
+    .template-body { padding: var(--space-5); }
+    .template-title { font-size: var(--text-lg); font-weight: var(--weight-semibold); margin-bottom: var(--space-2); }
+    .template-desc { font-size: var(--text-sm); color: var(--color-text-secondary); margin-bottom: var(--space-3); line-height: var(--leading-relaxed); }
+    .template-meta { display: flex; gap: var(--space-2); margin-bottom: var(--space-3); flex-wrap: wrap; }
     .template-footer { display: flex; justify-content: space-between; align-items: center; }
-    .stats { display: flex; gap: 16px; font-size: 12px; color: #888; }
-    .workflow-list { display: flex; flex-direction: column; gap: 12px; }
-    .workflow-item { background: #0f0f23; padding: 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
-    .workflow-info h4 { margin-bottom: 4px; }
-    .workflow-info p { font-size: 13px; color: #888; }
-    .workflow-actions { display: flex; gap: 8px; }
-    .btn-small { padding: 6px 12px; font-size: 13px; }
-    .loading { text-align: center; padding: 40px; color: #888; }
-    .hidden { display: none; }
-    .message { padding: 12px; border-radius: 8px; margin-bottom: 16px; }
-    .message.success { background: rgba(0, 212, 255, 0.1); border: 1px solid #00d4ff; color: #00d4ff; }
-    .message.error { background: rgba(255, 0, 0, 0.1); border: 1px solid #ff4444; color: #ff4444; }
-    .usage-card { background: #0f0f23; padding: 16px; border-radius: 12px; margin-bottom: 16px; }
-    .usage-title { font-size: 14px; color: #888; margin-bottom: 8px; }
-    .usage-value { font-size: 24px; font-weight: bold; color: #00d4ff; }
-    .usage-bar { height: 6px; background: #333; border-radius: 3px; margin-top: 8px; overflow: hidden; }
-    .usage-fill { height: 100%; background: #00d4ff; border-radius: 3px; }
+
+    .workflow-list { display: flex; flex-direction: column; gap: var(--space-3); }
+    .workflow-item {
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4) var(--space-5);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: border-color var(--transition-fast);
+    }
+    .workflow-item:hover { border-color: var(--color-border-hover); }
+    .workflow-info h4 { font-size: var(--text-base); font-weight: var(--weight-medium); margin-bottom: var(--space-1); }
+    .workflow-info p { font-size: var(--text-sm); color: var(--color-text-secondary); }
+    .workflow-actions { display: flex; gap: var(--space-2); }
+
+    .usage-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: var(--space-4);
+    }
   </style>
 </head>
 <body>
-  <div class="app">
-    <div class="sidebar">
-      <a href="dashboard.html" class="logo">MatrixGrow</a>
-      <nav>
-        <div class="nav-item" onclick="window.location.href='dashboard.html'">控制台</div>
-        <div class="nav-item" onclick="window.location.href='agent.html'">AI 助手</div>
-        <div class="nav-item active">工作流商店</div>
-        <div class="nav-item" onclick="window.location.href='workflow-import.html'">导入工作流</div>
-        <div class="nav-item" onclick="window.location.href='webhooks.html'">Webhook</div>
-        <div class="nav-item" onclick="window.location.href='subscription.html'">订阅</div>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <a href="/" class="sidebar-logo">MatrixGrow</a>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="nav-item"><span class="nav-icon">&#x1F4CA;</span>控制台</a>
+        <a href="agent.html" class="nav-item"><span class="nav-icon">&#x1F916;</span>AI 助手</a>
+        <a href="workflows.html" class="nav-item active"><span class="nav-icon">&#x1F4E6;</span>工作流商店</a>
+        <a href="workflow-import.html" class="nav-item"><span class="nav-icon">&#x1F4E5;</span>导入工作流</a>
+        <a href="webhooks.html" class="nav-item"><span class="nav-icon">&#x1F517;</span>Webhook</a>
+        <a href="analytics.html" class="nav-item"><span class="nav-icon">&#x1F4C8;</span>分析面板</a>
+        <a href="subscription.html" class="nav-item"><span class="nav-icon">&#x2B50;</span>订阅</a>
       </nav>
-      <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid #333;">
-        <div class="nav-item" onclick="logout()">退出登录</div>
+      <div class="sidebar-footer">
+        <button class="nav-item" onclick="handleLogout()"><span class="nav-icon">&#x2192;</span>退出登录</button>
       </div>
-    </div>
+    </aside>
 
-    <div class="main">
-      <div class="header">
-        <h1>工作流商店</h1>
-        <span id="tier-badge" class="tier-badge tier-free">免费版</span>
+    <main class="main-content">
+      <div class="page-header">
+        <div>
+          <h1>工作流商店</h1>
+          <p class="subtitle">浏览模板或管理你的工作流</p>
+        </div>
+        <span id="tier-badge" class="tier-badge tier-free">Free</span>
       </div>
+
+      <div id="message-container"></div>
 
       <div class="tabs">
-        <button class="tab active" onclick="showTab('templates')">模板商店</button>
-        <button class="tab" onclick="showTab('my')">我的工作流</button>
-        <button class="tab" onclick="showTab('usage')">使用统计</button>
+        <button class="tab active" data-tab="templates">模板商店</button>
+        <button class="tab" data-tab="my">我的工作流</button>
+        <button class="tab" data-tab="usage">使用统计</button>
       </div>
 
-      <!-- 模板商店 -->
+      <!-- Templates Tab -->
       <div id="templates-tab">
         <div class="card">
-          <h2>精选模板</h2>
-          <div id="templates-grid" class="grid">
-            <div class="loading">加载中...</div>
+          <div class="card-header">
+            <h2>精选模板</h2>
+          </div>
+          <div id="templates-grid" class="card-grid">
+            <div class="loading-state"><div class="spinner"></div><p>加载中...</p></div>
           </div>
         </div>
       </div>
 
-      <!-- 我的工作流 -->
+      <!-- My Workflows Tab -->
       <div id="my-tab" class="hidden">
         <div class="card">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <div class="card-header">
             <h2>我的工作流</h2>
-            <button class="btn btn-primary" onclick="window.location.href='workflow-import.html'">导入工作流</button>
+            <a href="workflow-import.html" class="btn btn-primary btn-sm">导入工作流</a>
           </div>
           <div id="workflows-list" class="workflow-list">
-            <div class="loading">加载中...</div>
+            <div class="loading-state"><div class="spinner"></div><p>加载中...</p></div>
           </div>
         </div>
       </div>
 
-      <!-- 使用统计 -->
+      <!-- Usage Tab -->
       <div id="usage-tab" class="hidden">
         <div class="card">
-          <h2>使用统计</h2>
-          <div id="usage-content">
-            <div class="loading">加载中...</div>
+          <div class="card-header">
+            <h2>使用统计</h2>
+          </div>
+          <div id="usage-content" class="usage-grid">
+            <div class="loading-state"><div class="spinner"></div><p>加载中...</p></div>
           </div>
         </div>
       </div>
-    </div>
+    </main>
   </div>
 
+  <script src="/js/shared.js"></script>
   <script>
-    const API_BASE = '/api';
-    let token = localStorage.getItem('token');
-    let currentTab = 'templates';
+    (function() {
+      const presetTemplates = [
+        { id: 1, name: '小红书爆款种草', description: 'AI写种草文 → 生成配图 → 小红书+微博+头条号', category: 'text', price: 0, preview: '📝', tags: ['小红书', '微博', 'AI'], installs: 1234, rating: 4.8 },
+        { id: 2, name: '技术博客全平台', description: 'Claude写长文 → 信息图 → 掘金+CSDN+思否+Dev.to', category: 'text', price: 0, preview: '💻', tags: ['技术', '博客', 'Claude'], installs: 890, rating: 4.9 },
+        { id: 3, name: '短视频脚本+发布', description: '选题 → AI脚本 → HeyGen视频 → B站+抖音', category: 'video', price: 0, preview: '🎬', tags: ['短视频', 'HeyGen', 'B站'], installs: 567, rating: 4.7 },
+        { id: 4, name: '微信公众号日更', description: '热点聚合 → AI改写 → 配封面 → 微信公众号', category: 'text', price: 0, preview: '📰', tags: ['公众号', '热点'], installs: 789, rating: 4.6 },
+        { id: 5, name: '知乎深度长文', description: '选题 → 深度研究 → Claude长文 → 知乎', category: 'text', price: 0, preview: '🎓', tags: ['知乎', '深度'], installs: 456, rating: 4.8 },
+        { id: 6, name: '海外增长引擎', description: '英文内容 → AI配图 → X+LinkedIn+IndieHackers', category: 'text', price: 0, preview: '🌍', tags: ['海外', 'X', 'LinkedIn'], installs: 345, rating: 4.7 }
+      ];
 
-    const presetTemplates = [
-      {
-        id: 1,
-        name: '小红书爆款种草',
-        description: 'AI写种草文 → 生成配图 → 小红书+微博+头条号',
-        category: 'text',
-        price: 0,
-        preview: '📝',
-        tags: ['小红书', '微博', 'AI'],
-        installs: 1234,
-        rating: 4.8,
-        target_platforms: ['xiaohongshu', 'weibo', 'toutiao']
-      },
-      {
-        id: 2,
-        name: '技术博客全平台',
-        description: 'Claude写长文 → 信息图 → 掘金+CSDN+思否+Dev.to',
-        category: 'text',
-        price: 0,
-        preview: '💻',
-        tags: ['技术', '博客', 'Claude'],
-        installs: 890,
-        rating: 4.9,
-        target_platforms: ['juejin', 'csdn', 'segmentfault', 'devto']
-      },
-      {
-        id: 3,
-        name: '短视频脚本+发布',
-        description: '选题 → AI脚本 → HeyGen视频 → B站+抖音',
-        category: 'video',
-        price: 0,
-        preview: '🎬',
-        tags: ['短视频', 'HeyGen', 'B站'],
-        installs: 567,
-        rating: 4.7,
-        target_platforms: ['bilibili', 'douyin']
-      },
-      {
-        id: 4,
-        name: '微信公众号日更',
-        description: '热点聚合 → AI改写 → 配封面 → 微信公众号',
-        category: 'text',
-        price: 0,
-        preview: '📰',
-        tags: ['公众号', '热点'],
-        installs: 789,
-        rating: 4.6,
-        target_platforms: ['wechat']
-      },
-      {
-        id: 5,
-        name: '知乎深度长文',
-        description: '选题 → 深度研究 → Claude长文 → 知乎',
-        category: 'text',
-        price: 0,
-        preview: '🎓',
-        tags: ['知乎', '深度'],
-        installs: 456,
-        rating: 4.8,
-        target_platforms: ['zhihu']
-      },
-      {
-        id: 6,
-        name: '海外增长引擎',
-        description: '英文内容 → AI配图 → X+LinkedIn+IndieHackers',
-        category: 'text',
-        price: 0,
-        preview: '🌍',
-        tags: ['海外', 'X', 'LinkedIn'],
-        installs: 345,
-        rating: 4.7,
-        target_platforms: ['x', 'linkedin', 'indiehackers']
-      }
-    ];
+      let currentTab = 'templates';
 
-    async function checkAuth() {
-      if (!token) {
-        window.location.href = '/login.html';
-        return false;
+      async function init() {
+        if (!await MatrixGrow.checkAuth()) return;
+        MatrixGrow.loadTierBadge();
+        loadTemplates();
       }
-      try {
-        const res = await fetch(`${API_BASE}/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
-        if (!res.ok) throw new Error('Unauthorized');
-        return true;
-      } catch {
-        localStorage.removeItem('token');
-        window.location.href = '/login.html';
-        return false;
-      }
-    }
 
-    async function loadUserInfo() {
-      if (!await checkAuth()) return;
-      try {
-        const res = await fetch(`${API_BASE}/subscription`, { headers: { Authorization: `Bearer ${token}` } });
-        if (res.ok) {
-          const sub = await res.json();
-          const badge = document.getElementById('tier-badge');
-          badge.className = `tier-badge tier-${sub.tier}`;
-          const tierNames = { free: '免费版', pro: 'Pro', promax: 'ProMax' };
-          badge.textContent = tierNames[sub.tier];
-        }
-      } catch (e) {
-        console.error('Failed to load user info:', e);
-      }
-    }
-
-    function showTab(tab) {
-      currentTab = tab;
-      document.querySelectorAll('.tab').forEach((t, i) => {
-        t.classList.toggle('active', (i === 0 && tab === 'templates') || (i === 1 && tab === 'my') || (i === 2 && tab === 'usage'));
+      // Tab switching
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const tabName = tab.dataset.tab;
+          if (tabName === currentTab) return;
+          currentTab = tabName;
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          document.getElementById('templates-tab').classList.toggle('hidden', tabName !== 'templates');
+          document.getElementById('my-tab').classList.toggle('hidden', tabName !== 'my');
+          document.getElementById('usage-tab').classList.toggle('hidden', tabName !== 'usage');
+          if (tabName === 'templates') loadTemplates();
+          if (tabName === 'my') loadMyWorkflows();
+          if (tabName === 'usage') loadUsage();
+        });
       });
-      document.getElementById('templates-tab').classList.toggle('hidden', tab !== 'templates');
-      document.getElementById('my-tab').classList.toggle('hidden', tab !== 'my');
-      document.getElementById('usage-tab').classList.toggle('hidden', tab !== 'usage');
-      
-      if (tab === 'templates') loadTemplates();
-      if (tab === 'my') loadMyWorkflows();
-      if (tab === 'usage') loadUsage();
-    }
 
-    async function loadTemplates() {
-      const grid = document.getElementById('templates-grid');
-      
-      try {
-        const res = await fetch(`${API_BASE}/workflows/templates`, { headers: { Authorization: `Bearer ${token}` } });
-        let templates = [];
-        if (res.ok) {
-          const data = await res.json();
-          templates = data.templates || [];
-        }
-        
-        if (!templates || templates.length === 0) {
-          templates = presetTemplates;
-        }
-
-        grid.innerHTML = templates.map(t => `
-          <div class="template-card">
-            <div class="template-preview">${t.preview || '📦'}</div>
-            <div class="template-body">
-              <div class="template-title">${t.name}</div>
-              <div class="template-desc">${t.description}</div>
-              <div class="template-meta">
-                ${(t.tags || []).map(tag => `<span class="meta-tag">${tag}</span>`).join('')}
-                ${t.category ? `<span class="meta-tag">${t.category}</span>` : ''}
-              </div>
-              <div class="template-footer">
-                <div class="stats">
-                  <span>📥 ${t.installs || 0}</span>
-                  <span>⭐ ${t.rating || 0}</span>
+      async function loadTemplates() {
+        const grid = document.getElementById('templates-grid');
+        try {
+          const data = await MatrixGrow.fetchJSON('/api/workflows/templates').catch(() => null);
+          const templates = (data && data.templates && data.templates.length > 0) ? data.templates : presetTemplates;
+          grid.innerHTML = templates.map(t => `
+            <div class="template-card">
+              <div class="template-preview">${t.preview || '📦'}</div>
+              <div class="template-body">
+                <div class="template-title">${t.name}</div>
+                <div class="template-desc">${t.description}</div>
+                <div class="template-meta">
+                  ${(t.tags || []).map(tag => `<span class="tag">${tag}</span>`).join('')}
+                  ${t.category ? `<span class="tag">${t.category}</span>` : ''}
                 </div>
-                <span class="price-tag ${t.price === 0 ? 'price-free' : ''}">${t.price === 0 ? '免费' : `¥${t.price}`}</span>
-              </div>
-              <button class="btn btn-primary" style="width: 100%; margin-top: 12px;" onclick="installTemplate(${t.id}, '${t.name}')">
-                安装模板
-              </button>
-            </div>
-          </div>
-        `).join('');
-      } catch (e) {
-        console.error('Failed to load templates:', e);
-        grid.innerHTML = presetTemplates.map(t => `
-          <div class="template-card">
-            <div class="template-preview">${t.preview}</div>
-            <div class="template-body">
-              <div class="template-title">${t.name}</div>
-              <div class="template-desc">${t.description}</div>
-              <div class="template-meta">
-                ${t.tags.map(tag => `<span class="meta-tag">${tag}</span>`).join('')}
-              </div>
-              <div class="template-footer">
-                <div class="stats">
-                  <span>📥 ${t.installs}</span>
-                  <span>⭐ ${t.rating}</span>
+                <div class="template-footer">
+                  <div class="flex gap-3 text-sm text-muted">
+                    <span>&#x1F4E5; ${t.installs || 0}</span>
+                    <span>&#x2B50; ${t.rating || 0}</span>
+                  </div>
+                  <span class="${t.price === 0 ? 'text-sm' : 'price-tag'}">
+                    ${t.price === 0 ? '<span class="badge badge-success">免费</span>' : '&yen;' + t.price}
+                  </span>
                 </div>
-                <span class="price-tag price-free">免费</span>
-              </div>
-              <button class="btn btn-primary" style="width: 100%; margin-top: 12px;" onclick="installTemplate(${t.id}, '${t.name}')">
-                安装模板
-              </button>
-            </div>
-          </div>
-        `).join('');
-      }
-    }
-
-    async function installTemplate(id, name) {
-      try {
-        const res = await fetch(`${API_BASE}/workflows/templates/${id}/install`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ name })
-        });
-
-        if (res.ok) {
-          showMessage('模板安装成功！', 'success');
-          showTab('my');
-        } else {
-          const err = await res.json();
-          throw new Error(err.error || '安装失败');
-        }
-      } catch (e) {
-        const mockId = Date.now();
-        const mockWorkflows = JSON.parse(localStorage.getItem('mockWorkflows') || '[]');
-        mockWorkflows.push({
-          id: mockId,
-          name: name,
-          status: 'active',
-          created_at: new Date().toISOString(),
-          run_count: 0
-        });
-        localStorage.setItem('mockWorkflows', JSON.stringify(mockWorkflows));
-        showMessage('模板安装成功！', 'success');
-        showTab('my');
-      }
-    }
-
-    async function loadMyWorkflows() {
-      const list = document.getElementById('workflows-list');
-      
-      try {
-        const res = await fetch(`${API_BASE}/workflows/my`, { headers: { Authorization: `Bearer ${token}` } });
-        let workflows = [];
-        if (res.ok) {
-          const data = await res.json();
-          workflows = data.workflows || [];
-        }
-
-        const mockWorkflows = JSON.parse(localStorage.getItem('mockWorkflows') || '[]');
-        
-        if (!workflows || workflows.length === 0) {
-          workflows = mockWorkflows;
-        }
-
-        if (!workflows || workflows.length === 0) {
-          list.innerHTML = '<p style="color: #888; text-align: center; padding: 40px;">暂无工作流，点击上方按钮导入或安装模板</p>';
-          return;
-        }
-
-        list.innerHTML = workflows.map(w => `
-          <div class="workflow-item">
-            <div class="workflow-info">
-              <h4>${w.name}</h4>
-              <p>状态: ${w.status === 'active' ? '🟢 活跃' : '⚪ 停用'} | 运行: ${w.run_count || 0} 次</p>
-            </div>
-            <div class="workflow-actions">
-              <button class="btn btn-secondary btn-small" onclick="runWorkflow(${w.id})">运行</button>
-              <button class="btn btn-secondary btn-small" onclick="deleteWorkflow(${w.id})">删除</button>
-            </div>
-          </div>
-        `).join('');
-      } catch (e) {
-        console.error('Failed to load workflows:', e);
-        const mockWorkflows = JSON.parse(localStorage.getItem('mockWorkflows') || '[]');
-        if (mockWorkflows.length === 0) {
-          list.innerHTML = '<p style="color: #888; text-align: center; padding: 40px;">暂无工作流，点击上方按钮导入或安装模板</p>';
-        } else {
-          list.innerHTML = mockWorkflows.map(w => `
-            <div class="workflow-item">
-              <div class="workflow-info">
-                <h4>${w.name}</h4>
-                <p>状态: ${w.status === 'active' ? '🟢 活跃' : '⚪ 停用'} | 运行: ${w.run_count || 0} 次</p>
-              </div>
-              <div class="workflow-actions">
-                <button class="btn btn-secondary btn-small" onclick="runWorkflow(${w.id})">运行</button>
-                <button class="btn btn-secondary btn-small" onclick="deleteWorkflow(${w.id})">删除</button>
+                <button class="btn btn-primary btn-block mt-4" data-id="${t.id}" data-name="${t.name}">
+                  安装模板
+                </button>
               </div>
             </div>
           `).join('');
+          grid.querySelectorAll('.btn-primary').forEach(btn => {
+            btn.addEventListener('click', () => installTemplate(parseInt(btn.dataset.id), btn.dataset.name));
+          });
+        } catch (e) {
+          grid.innerHTML = MatrixGrow.renderError('加载模板失败，请重试', loadTemplates);
         }
       }
-    }
 
-    async function runWorkflow(id) {
-      showMessage('工作流已触发运行！', 'success');
-    }
-
-    async function deleteWorkflow(id) {
-      if (!confirm('确定要删除这个工作流吗？')) return;
-      
-      try {
-        const res = await fetch(`${API_BASE}/workflows/my/${id}`, {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        if (res.ok) {
-          showMessage('工作流已删除', 'success');
+      async function installTemplate(id, name) {
+        try {
+          await MatrixGrow.fetchJSON(`/api/workflows/templates/${id}/install`, {
+            method: 'POST',
+            body: JSON.stringify({ name })
+          });
+          MatrixGrow.toast.success('模板安装成功！');
+          currentTab = 'my';
+          document.querySelectorAll('.tab').forEach(t => {
+            t.classList.toggle('active', t.dataset.tab === 'my');
+          });
+          document.getElementById('templates-tab').classList.add('hidden');
+          document.getElementById('my-tab').classList.remove('hidden');
+          document.getElementById('usage-tab').classList.add('hidden');
           loadMyWorkflows();
-        } else {
-          throw new Error('删除失败');
+        } catch {
+          // fallback: save locally
+          const mockWorkflows = JSON.parse(localStorage.getItem('mockWorkflows') || '[]');
+          mockWorkflows.push({
+            id: Date.now(),
+            name: name,
+            status: 'active',
+            created_at: new Date().toISOString(),
+            run_count: 0
+          });
+          localStorage.setItem('mockWorkflows', JSON.stringify(mockWorkflows));
+          MatrixGrow.toast.success('模板安装成功！');
+          currentTab = 'my';
+          document.querySelectorAll('.tab').forEach(t => {
+            t.classList.toggle('active', t.dataset.tab === 'my');
+          });
+          document.getElementById('templates-tab').classList.add('hidden');
+          document.getElementById('my-tab').classList.remove('hidden');
+          document.getElementById('usage-tab').classList.add('hidden');
+          loadMyWorkflows();
         }
-      } catch (e) {
+      }
+
+      async function loadMyWorkflows() {
+        const list = document.getElementById('workflows-list');
+        try {
+          const data = await MatrixGrow.fetchJSON('/api/workflows/my').catch(() => null);
+          let workflows = (data && data.workflows && data.workflows.length > 0) ? data.workflows : null;
+          if (!workflows || workflows.length === 0) {
+            const mockWorkflows = JSON.parse(localStorage.getItem('mockWorkflows') || '[]');
+            workflows = mockWorkflows.length > 0 ? mockWorkflows : null;
+          }
+          if (!workflows || workflows.length === 0) {
+            list.innerHTML = MatrixGrow.renderEmpty('&#x1F4E6;', '暂无工作流', '点击上方按钮导入或安装模板', '<a href="workflow-import.html" class="btn btn-primary btn-sm mt-4">导入工作流</a>');
+            return;
+          }
+          list.innerHTML = workflows.map(w => `
+            <div class="workflow-item">
+              <div class="workflow-info">
+                <h4>${w.name}</h4>
+                <p>
+                  <span class="status-dot ${w.status === 'active' ? 'active' : 'inactive'}"></span>
+                  ${w.status === 'active' ? '活跃' : '停用'}
+                  &middot; 运行 ${w.run_count || 0} 次
+                </p>
+              </div>
+              <div class="workflow-actions">
+                <button class="btn btn-secondary btn-sm run-btn" data-id="${w.id}">运行</button>
+                <button class="btn btn-ghost btn-sm delete-btn" data-id="${w.id}">删除</button>
+              </div>
+            </div>
+          `).join('');
+          list.querySelectorAll('.run-btn').forEach(btn => {
+            btn.addEventListener('click', () => MatrixGrow.toast.success('工作流已触发运行！'));
+          });
+          list.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', () => deleteWorkflow(parseInt(btn.dataset.id)));
+          });
+        } catch {
+          const mockWorkflows = JSON.parse(localStorage.getItem('mockWorkflows') || '[]');
+          if (mockWorkflows.length === 0) {
+            list.innerHTML = MatrixGrow.renderEmpty('&#x1F4E6;', '暂无工作流', '点击上方按钮导入或安装模板', '<a href="workflow-import.html" class="btn btn-primary btn-sm mt-4">导入工作流</a>');
+          } else {
+            list.innerHTML = mockWorkflows.map(w => `
+              <div class="workflow-item">
+                <div class="workflow-info">
+                  <h4>${w.name}</h4>
+                  <p>
+                    <span class="status-dot ${w.status === 'active' ? 'active' : 'inactive'}"></span>
+                    ${w.status === 'active' ? '活跃' : '停用'}
+                    &middot; 运行 ${w.run_count || 0} 次
+                  </p>
+                </div>
+                <div class="workflow-actions">
+                  <button class="btn btn-secondary btn-sm" onclick="MatrixGrow.toast.success('工作流已触发运行！')">运行</button>
+                  <button class="btn btn-ghost btn-sm" onclick="deleteWorkflowFallback(${w.id})">删除</button>
+                </div>
+              </div>
+            `).join('');
+          }
+        }
+      }
+
+      async function deleteWorkflow(id) {
+        const confirmed = await MatrixGrow.confirm('删除工作流', '确定要删除这个工作流吗？', { icon: 'delete', confirmText: '删除', danger: true });
+        if (!confirmed) return;
+        try {
+          await MatrixGrow.fetchJSON(`/api/workflows/my/${id}`, { method: 'DELETE' });
+          MatrixGrow.toast.success('工作流已删除');
+          loadMyWorkflows();
+        } catch {
+          deleteWorkflowFallback(id);
+        }
+      }
+
+      function deleteWorkflowFallback(id) {
         const mockWorkflows = JSON.parse(localStorage.getItem('mockWorkflows') || '[]');
         const filtered = mockWorkflows.filter(w => w.id !== id);
         localStorage.setItem('mockWorkflows', JSON.stringify(filtered));
-        showMessage('工作流已删除', 'success');
+        MatrixGrow.toast.success('工作流已删除');
         loadMyWorkflows();
       }
-    }
 
-    async function loadUsage() {
-      const content = document.getElementById('usage-content');
-      
-      try {
-        const res = await fetch(`${API_BASE}/workflows/usage`, { headers: { Authorization: `Bearer ${token}` } });
-        let monthlyStats = {};
-        if (res.ok) {
-          const data = await res.json();
-          monthlyStats = data.monthlyStats || {};
+      async function loadUsage() {
+        const content = document.getElementById('usage-content');
+        try {
+          const data = await MatrixGrow.fetchJSON('/api/workflows/usage').catch(() => null);
+          const stats = (data && data.monthlyStats) ? data.monthlyStats : {};
+          content.innerHTML = `
+            <div class="stat-card">
+              <div class="stat-label">工作流使用</div>
+              <div class="stat-value">${stats.workflows || 0} <span style="font-size:0.6em;color:var(--color-text-muted);">/ 3</span></div>
+              <div class="progress-bar mt-2"><div class="progress-fill" style="width:${Math.min((stats.workflows || 0) / 3 * 100, 100)}%"></div></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">AI 图片生成</div>
+              <div class="stat-value">${stats.images || 0} <span style="font-size:0.6em;color:var(--color-text-muted);">/ 10 张</span></div>
+              <div class="progress-bar mt-2"><div class="progress-fill" style="width:${Math.min((stats.images || 0) / 10 * 100, 100)}%"></div></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">AI 视频生成</div>
+              <div class="stat-value">${stats.videos || 0} <span style="font-size:0.6em;color:var(--color-text-muted);">/ 0 分钟</span></div>
+              <div class="progress-bar mt-2"><div class="progress-fill" style="width:0%"></div></div>
+            </div>
+          `;
+        } catch {
+          content.innerHTML = `
+            <div class="stat-card">
+              <div class="stat-label">工作流使用</div>
+              <div class="stat-value">0 <span style="font-size:0.6em;color:var(--color-text-muted);">/ 3</span></div>
+              <div class="progress-bar mt-2"><div class="progress-fill" style="width:0%"></div></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">AI 图片生成</div>
+              <div class="stat-value">0 <span style="font-size:0.6em;color:var(--color-text-muted);">/ 10 张</span></div>
+              <div class="progress-bar mt-2"><div class="progress-fill" style="width:0%"></div></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">AI 视频生成</div>
+              <div class="stat-value">0 <span style="font-size:0.6em;color:var(--color-text-muted);">/ 0 分钟</span></div>
+              <div class="progress-bar mt-2"><div class="progress-fill" style="width:0%"></div></div>
+            </div>
+          `;
         }
-
-        content.innerHTML = `
-          <div class="usage-card">
-            <div class="usage-title">工作流使用</div>
-            <div class="usage-value">${monthlyStats.workflows || 0} / 3</div>
-            <div class="usage-bar">
-              <div class="usage-fill" style="width: ${Math.min((monthlyStats.workflows || 0) / 3 * 100, 100)}%"></div>
-            </div>
-          </div>
-          <div class="usage-card">
-            <div class="usage-title">AI 图片生成</div>
-            <div class="usage-value">${monthlyStats.images || 0} / 10 张</div>
-            <div class="usage-bar">
-              <div class="usage-fill" style="width: ${Math.min((monthlyStats.images || 0) / 10 * 100, 100)}%"></div>
-            </div>
-          </div>
-          <div class="usage-card">
-            <div class="usage-title">AI 视频生成</div>
-            <div class="usage-value">${monthlyStats.videos || 0} / 0 分钟</div>
-            <div class="usage-bar">
-              <div class="usage-fill" style="width: 0%"></div>
-            </div>
-          </div>
-        `;
-      } catch (e) {
-        console.error('Failed to load usage:', e);
-        content.innerHTML = `
-          <div class="usage-card">
-            <div class="usage-title">工作流使用</div>
-            <div class="usage-value">0 / 3</div>
-            <div class="usage-bar">
-              <div class="usage-fill" style="width: 0%"></div>
-            </div>
-          </div>
-          <div class="usage-card">
-            <div class="usage-title">AI 图片生成</div>
-            <div class="usage-value">0 / 10 张</div>
-            <div class="usage-bar">
-              <div class="usage-fill" style="width: 0%"></div>
-            </div>
-          </div>
-          <div class="usage-card">
-            <div class="usage-title">AI 视频生成</div>
-            <div class="usage-value">0 / 0 分钟</div>
-            <div class="usage-bar">
-              <div class="usage-fill" style="width: 0%"></div>
-            </div>
-          </div>
-        `;
       }
-    }
 
-    function showMessage(text, type = 'success') {
-      const msg = document.createElement('div');
-      msg.className = `message ${type}`;
-      msg.textContent = text;
-      document.querySelector('.main').insertBefore(msg, document.querySelector('.tabs'));
-      setTimeout(() => msg.remove(), 5000);
-    }
+      function handleLogout() {
+        MatrixGrow.logout();
+      }
 
-    function logout() {
-      localStorage.removeItem('token');
-      window.location.href = '/login.html';
-    }
-
-    loadUserInfo();
-    loadTemplates();
+      init();
+    })();
   </script>
 </body>
 </html>

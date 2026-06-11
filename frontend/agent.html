@@ -4,257 +4,303 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MatrixGrow - AI 智能助手</title>
+  <link rel="stylesheet" href="/css/base.css">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f0f23; color: #fff; }
-    .app { display: flex; min-height: 100vh; }
-    .sidebar { width: 260px; background: #1a1a2e; padding: 20px; display: flex; flex-direction: column; }
-    .logo { font-size: 24px; font-weight: bold; margin-bottom: 40px; color: #00d4ff; }
-    .nav-item { padding: 12px 16px; margin: 4px 0; border-radius: 8px; cursor: pointer; transition: background 0.2s; color: #888; }
-    .nav-item:hover, .nav-item.active { background: #16213e; color: #fff; }
-    .main { flex: 1; display: flex; flex-direction: column; }
-    .chat-header { padding: 20px 30px; background: #1a1a2e; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
-    .chat-header h1 { font-size: 20px; }
-    .chat-messages { flex: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 20px; }
-    .message { max-width: 80%; padding: 16px 20px; border-radius: 16px; line-height: 1.6; }
-    .message.user { align-self: flex-end; background: #00d4ff; color: #000; border-bottom-right-radius: 4px; }
-    .message.agent { align-self: flex-start; background: #1a1a2e; border-bottom-left-radius: 4px; }
-    .message .actions { margin-top: 12px; padding-top: 12px; border-top: 1px solid #333; display: flex; gap: 8px; }
-    .message .action-btn { padding: 6px 12px; background: #333; border: none; border-radius: 6px; color: #fff; cursor: pointer; font-size: 12px; }
-    .message .action-btn:hover { background: #444; }
-    .message .action-btn.primary { background: #00d4ff; color: #000; }
-    .chat-input-area { padding: 20px 30px; background: #1a1a2e; border-top: 1px solid #333; }
-    .chat-input-wrapper { display: flex; gap: 12px; }
-    .chat-input { flex: 1; padding: 12px 16px; border: 1px solid #333; border-radius: 12px; background: #0f0f23; color: #fff; font-size: 14px; resize: none; height: 60px; }
-    .chat-input:focus { outline: none; border-color: #00d4ff; }
-    .send-btn { padding: 12px 24px; background: #00d4ff; color: #000; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; }
-    .send-btn:hover { background: #00b8e6; }
-    .send-btn:disabled { background: #333; cursor: not-allowed; }
-    .typing-indicator { display: flex; gap: 4px; padding: 16px 20px; align-self: flex-start; }
-    .typing-dot { width: 8px; height: 8px; background: #888; border-radius: 50%; animation: typing 1.4s infinite; }
-    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes typing { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
-    .btn { padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; }
-    .btn-secondary { background: #333; color: #fff; }
-    .message-content p { margin-bottom: 8px; }
-    .message-content p:last-child { margin-bottom: 0; }
-    .message-content code { background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.9em; }
-    .message-content pre { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; overflow-x: auto; margin: 8px 0; }
-    .message-content pre code { background: transparent; padding: 0; }
+    .chat-layout {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .chat-header {
+      padding: var(--space-5) var(--space-8);
+      background: var(--color-bg-card);
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .chat-header h1 { font-size: var(--text-xl); font-weight: var(--weight-semibold); }
+    .chat-header .header-sub { color: var(--color-text-secondary); font-size: var(--text-sm); }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--space-8);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+    }
+
+    .msg {
+      max-width: 75%;
+      padding: var(--space-4) var(--space-5);
+      border-radius: var(--radius-xl);
+      line-height: var(--leading-relaxed);
+      font-size: var(--text-sm);
+      animation: msgIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg.user {
+      align-self: flex-end;
+      background: var(--color-brand);
+      color: var(--color-text-inverse);
+      border-bottom-right-radius: var(--radius-sm);
+    }
+    .msg.agent {
+      align-self: flex-start;
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-bottom-left-radius: var(--radius-sm);
+    }
+
+    .msg .actions {
+      margin-top: var(--space-3);
+      padding-top: var(--space-3);
+      border-top: 1px solid var(--color-border);
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+
+    .msg-content p { margin-bottom: var(--space-2); }
+    .msg-content p:last-child { margin-bottom: 0; }
+    .msg-content code {
+      background: rgba(0,0,0,0.2);
+      padding: 1px 5px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+    }
+    .msg-content pre {
+      background: var(--color-bg-inset);
+      padding: var(--space-3);
+      border-radius: var(--radius-md);
+      overflow-x: auto;
+      margin: var(--space-2) 0;
+      border: 1px solid var(--color-border);
+    }
+    .msg-content pre code { background: transparent; padding: 0; }
+
+    .chat-input-area {
+      padding: var(--space-5) var(--space-8);
+      background: var(--color-bg-card);
+      border-top: 1px solid var(--color-border);
+      flex-shrink: 0;
+    }
+    .chat-input-wrapper { display: flex; gap: var(--space-3); align-items: flex-end; }
+    .chat-input {
+      flex: 1;
+      padding: var(--space-3) var(--space-4);
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      color: var(--color-text-primary);
+      font-size: var(--text-sm);
+      font-family: var(--font-sans);
+      resize: none;
+      min-height: 52px;
+      max-height: 120px;
+      transition: border-color var(--transition-fast);
+    }
+    .chat-input:focus { outline: none; border-color: var(--color-brand); box-shadow: 0 0 0 3px var(--color-brand-light); }
+
+    @media (max-width: 768px) {
+      .chat-messages { padding: var(--space-4); }
+      .chat-input-area { padding: var(--space-4); }
+      .chat-header { padding: var(--space-4); }
+      .msg { max-width: 88%; }
+    }
   </style>
 </head>
 <body>
-  <div class="app">
-    <div class="sidebar">
-      <div class="logo">MatrixGrow</div>
-      <nav>
-        <div class="nav-item" onclick="window.location.href='dashboard.html'">控制台</div>
-        <div class="nav-item active">AI 助手</div>
-        <div class="nav-item" onclick="window.location.href='webhooks.html'">Webhook</div>
-        <div class="nav-item" onclick="window.location.href='subscription.html'">订阅</div>
-        <div class="nav-item" onclick="window.location.href='dashboard.html#settings'">设置</div>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <a href="/" class="sidebar-logo">MatrixGrow</a>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="nav-item"><span class="nav-icon">&#x1F4CA;</span>控制台</a>
+        <a href="agent.html" class="nav-item active"><span class="nav-icon">&#x1F916;</span>AI 助手</a>
+        <a href="workflows.html" class="nav-item"><span class="nav-icon">&#x1F4E6;</span>工作流商店</a>
+        <a href="workflow-import.html" class="nav-item"><span class="nav-icon">&#x1F4E5;</span>导入工作流</a>
+        <a href="webhooks.html" class="nav-item"><span class="nav-icon">&#x1F517;</span>Webhook</a>
+        <a href="analytics.html" class="nav-item"><span class="nav-icon">&#x1F4C8;</span>分析面板</a>
+        <a href="subscription.html" class="nav-item"><span class="nav-icon">&#x2B50;</span>订阅</a>
       </nav>
-      <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid #333;">
-        <div class="nav-item" onclick="logout()">退出登录</div>
+      <div class="sidebar-footer">
+        <button class="nav-item" onclick="handleLogout()"><span class="nav-icon">&#x2192;</span>退出登录</button>
       </div>
-    </div>
+    </aside>
 
-    <div class="main">
+    <div class="chat-layout">
       <div class="chat-header">
-        <h1>🤖 AI 智能助手</h1>
-        <button class="btn btn-secondary" onclick="clearChat()">清空对话</button>
+        <div>
+          <h1>&#x1F916; AI 智能助手</h1>
+          <span class="header-sub">帮你发布、改写、查询数据</span>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="clearChat()">清空对话</button>
       </div>
 
-      <div class="chat-messages" id="chat-messages">
-        <!-- 消息将动态加载 -->
-      </div>
+      <div class="chat-messages" id="chat-messages"></div>
 
       <div class="chat-input-area">
         <div class="chat-input-wrapper">
           <textarea id="chat-input" class="chat-input" placeholder="输入你的问题，我可以帮你发布内容、改写文本、查询数据..." onkeydown="handleKeyDown(event)"></textarea>
-          <button id="send-btn" class="send-btn" onclick="sendMessage()">发送</button>
+          <button id="send-btn" class="btn btn-primary" onclick="sendMessage()" style="height:52px;">发送</button>
         </div>
       </div>
     </div>
   </div>
 
+  <script src="/js/shared.js"></script>
   <script>
-    const API_BASE = '/api';
-    let token = localStorage.getItem('token');
-    let sessionId = localStorage.getItem('agent-session-id') || 'default';
-    let messages = JSON.parse(localStorage.getItem('agent-messages') || '[]');
+    (function() {
+      const API_BASE = MatrixGrow.API_BASE || '/api';
+      let sessionId = localStorage.getItem('agent-session-id') || 'default';
+      let messages = JSON.parse(localStorage.getItem('agent-messages') || '[]');
 
-    // 检查登录状态
-    async function checkAuth() {
-      if (!token) {
-        window.location.href = '/login.html';
-        return false;
-      }
-
-      try {
-        const res = await fetch(`${API_BASE}/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (!res.ok) throw new Error('Unauthorized');
-        return true;
-      } catch {
-        localStorage.removeItem('token');
-        window.location.href = '/login.html';
-        return false;
-      }
-    }
-
-    // 渲染消息
-    function renderMessages() {
-      const container = document.getElementById('chat-messages');
-      container.innerHTML = messages.map(msg => `
-        <div class="message ${msg.role}">
-          <div class="message-content">${formatMessage(msg.content)}</div>
-          ${msg.actions ? `<div class="actions">${msg.actions.map(action => `<button class="action-btn ${action.primary ? 'primary' : ''}" onclick="executeAction('${action.name}', ${JSON.stringify(action.params)})">${action.label}</button>`).join('')}</div>` : ''}
-        </div>
-      `).join('');
-      container.scrollTop = container.scrollHeight;
-    }
-
-    // 格式化消息
-    function formatMessage(content) {
-      // 简单的 Markdown 格式化
-      return content
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/`([^`]+)`/g, '<code>$1</code>')
-        .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
-        .replace(/\n/g, '<br>');
-    }
-
-    // 添加消息
-    function addMessage(role, content, actions = null) {
-      const msg = { role, content, actions, timestamp: Date.now() };
-      messages.push(msg);
-      localStorage.setItem('agent-messages', JSON.stringify(messages));
-      renderMessages();
-    }
-
-    // 发送消息
-    async function sendMessage() {
-      const input = document.getElementById('chat-input');
-      const content = input.value.trim();
-      if (!content) return;
-
-      addMessage('user', content);
-      input.value = '';
-
-      const sendBtn = document.getElementById('send-btn');
-      sendBtn.disabled = true;
-
-      // 显示打字指示器
-      const container = document.getElementById('chat-messages');
-      container.innerHTML += `
-        <div class="typing-indicator" id="typing-indicator">
-          <div class="typing-dot"></div>
-          <div class="typing-dot"></div>
-          <div class="typing-dot"></div>
-        </div>
-      `;
-      container.scrollTop = container.scrollHeight;
-
-      try {
-        const res = await fetch(`${API_BASE}/agent`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({ message: content, session_id: sessionId })
-        });
-
-        const indicator = document.getElementById('typing-indicator');
-        if (indicator) indicator.remove();
-
-        if (res.ok) {
-          const data = await res.json();
-          addMessage('agent', data.content || '抱歉，我暂时无法回复，请稍后再试。', data.actions);
-        } else {
-          addMessage('agent', '抱歉，发生了错误，请稍后再试。');
-        }
-      } catch (e) {
-        const indicator = document.getElementById('typing-indicator');
-        if (indicator) indicator.remove();
-        addMessage('agent', '抱歉，发生了错误，请稍后再试。');
-      } finally {
-        sendBtn.disabled = false;
-      }
-    }
-
-    // 执行动作
-    async function executeAction(actionName, params) {
-      // 这里可以根据不同的动作执行不同的操作
-      switch (actionName) {
-        case 'publish':
-          alert(`发布功能：内容为 "${params.content}" 到 ${params.platforms.join(', ')}`);
-          break;
-        case 'rewrite':
-          alert(`改写功能：改写 "${params.content}" 为 ${params.style} 风格`);
-          break;
-        case 'query_stats':
-          alert(`查询统计功能`);
-          break;
-        case 'bind_platform':
-          window.location.href = 'dashboard.html#platforms';
-          break;
-        case 'upgrade':
-          window.location.href = 'subscription.html';
-          break;
-        default:
-          alert('执行操作: ' + actionName);
-      }
-    }
-
-    // 清空对话
-    async function clearChat() {
-      if (!confirm('确定要清空对话历史吗？')) return;
-
-      messages = [];
-      localStorage.removeItem('agent-messages');
-
-      try {
-        await fetch(`${API_BASE}/agent/clear-session`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({ session_id: sessionId })
-        });
-      } catch (e) {}
-
-      renderMessages();
-    }
-
-    // 处理键盘事件
-    function handleKeyDown(event) {
-      if (event.key === 'Enter' && !event.shiftKey) {
-        event.preventDefault();
-        sendMessage();
-      }
-    }
-
-    function logout() {
-      localStorage.removeItem('token');
-      localStorage.removeItem('agent-messages');
-      window.location.href = '/login.html';
-    }
-
-    // 初始化
-    checkAuth().then(auth => {
-      if (auth) {
+      async function init() {
+        if (!await MatrixGrow.checkAuth()) return;
         renderMessages();
         if (messages.length === 0) {
           addMessage('agent', '你好！我是 MatrixGrow 的 AI 智能助手。我可以帮你：\n\n- 发布内容到多个平台\n- 改写文本适应不同平台风格\n- 查询你的运营数据\n- 绑定平台账号\n- 管理订阅\n\n有什么需要帮助的吗？');
         }
       }
-    });
+
+      function renderMessages() {
+        const container = document.getElementById('chat-messages');
+        container.innerHTML = messages.map(msg => `
+          <div class="msg ${msg.role}">
+            <div class="msg-content">${formatMessage(msg.content)}</div>
+            ${msg.actions ? `<div class="actions">${msg.actions.map(action => `
+              <button class="btn btn-sm ${action.primary ? 'btn-primary' : 'btn-secondary'}" onclick="executeAction('${action.name}', '${JSON.stringify(action.params).replace(/'/g, "\\'")}')">${action.label}</button>
+            `).join('')}</div>` : ''}
+          </div>
+        `).join('');
+        container.scrollTop = container.scrollHeight;
+      }
+
+      function formatMessage(content) {
+        return content
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/`([^`]+)`/g, '<code>$1</code>')
+          .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+          .replace(/\n/g, '<br>');
+      }
+
+      function addMessage(role, content, actions) {
+        messages.push({ role, content, actions, timestamp: Date.now() });
+        localStorage.setItem('agent-messages', JSON.stringify(messages));
+        renderMessages();
+      }
+
+      async function sendMessage() {
+        const input = document.getElementById('chat-input');
+        const content = input.value.trim();
+        if (!content) return;
+
+        addMessage('user', content);
+        input.value = '';
+
+        const sendBtn = document.getElementById('send-btn');
+        sendBtn.disabled = true;
+
+        // Show typing indicator
+        const container = document.getElementById('chat-messages');
+        const typingEl = document.createElement('div');
+        typingEl.className = 'typing-indicator';
+        typingEl.id = 'typing-indicator';
+        typingEl.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+        container.appendChild(typingEl);
+        container.scrollTop = container.scrollHeight;
+
+        try {
+          const res = await fetch(`${API_BASE}/agent`, {
+            method: 'POST',
+            headers: MatrixGrow.authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ message: content, session_id: sessionId })
+          });
+
+          const indicator = document.getElementById('typing-indicator');
+          if (indicator) indicator.remove();
+
+          if (res.ok) {
+            const data = await res.json();
+            addMessage('agent', data.content || '抱歉，我暂时无法回复，请稍后再试。', data.actions);
+          } else {
+            addMessage('agent', '抱歉，发生了错误，请稍后再试。');
+          }
+        } catch {
+          const indicator = document.getElementById('typing-indicator');
+          if (indicator) indicator.remove();
+          addMessage('agent', '抱歉，发生了错误，请稍后再试。');
+        } finally {
+          sendBtn.disabled = false;
+        }
+      }
+
+      window.executeAction = function(actionName, paramsStr) {
+        let params;
+        try { params = JSON.parse(paramsStr); } catch { params = {}; }
+        switch (actionName) {
+          case 'publish':
+            MatrixGrow.toast.info('发布功能：需要先创建内容');
+            break;
+          case 'rewrite':
+            MatrixGrow.toast.info('改写功能：请在创建页面使用');
+            break;
+          case 'query_stats':
+            MatrixGrow.toast.info('查询功能已触发');
+            break;
+          case 'bind_platform':
+            window.location.href = 'dashboard.html#platforms';
+            break;
+          case 'upgrade':
+            window.location.href = 'subscription.html';
+            break;
+          default:
+            MatrixGrow.toast.info('执行操作: ' + actionName);
+        }
+      };
+
+      async function clearChat() {
+        const confirmed = await MatrixGrow.confirm('清空对话', '确定要清空对话历史吗？', { icon: 'warning', confirmText: '清空' });
+        if (!confirmed) return;
+
+        messages = [];
+        localStorage.removeItem('agent-messages');
+
+        try {
+          await fetch(`${API_BASE}/agent/clear-session`, {
+            method: 'POST',
+            headers: MatrixGrow.authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ session_id: sessionId })
+          });
+        } catch {}
+
+        renderMessages();
+        addMessage('agent', '对话已清空。有什么可以帮你的？');
+      }
+
+      function handleKeyDown(event) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+          event.preventDefault();
+          sendMessage();
+        }
+      }
+
+      function handleLogout() {
+        MatrixGrow.logout();
+      }
+
+      init();
+    })();
   </script>
 </body>
 </html>

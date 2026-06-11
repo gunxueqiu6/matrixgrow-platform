@@ -3,402 +3,916 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MatrixGrow - 工作流导入</title>
+  <title>MatrixGrow - 导入工作流</title>
+  <link rel="stylesheet" href="/css/base.css">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f0f23; color: #fff; }
-    .app { display: flex; min-height: 100vh; }
-    .sidebar { width: 260px; background: #1a1a2e; padding: 20px; display: flex; flex-direction: column; }
-    .logo { font-size: 24px; font-weight: bold; margin-bottom: 40px; color: #00d4ff; text-decoration: none; }
-    .nav-item { padding: 12px 16px; margin: 4px 0; border-radius: 8px; cursor: pointer; transition: background 0.2s; color: #888; }
-    .nav-item:hover, .nav-item.active { background: #16213e; color: #fff; }
-    .main { flex: 1; padding: 30px; overflow-y: auto; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-    .header h1 { font-size: 28px; }
-    .tier-badge { padding: 6px 16px; border-radius: 20px; font-size: 14px; font-weight: bold; }
-    .tier-free { background: #333; color: #888; }
-    .tier-pro { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; }
-    .tier-promax { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: #fff; }
-    .card { background: #1a1a2e; padding: 24px; border-radius: 16px; margin-bottom: 20px; }
-    .card h2 { margin-bottom: 20px; font-size: 18px; }
-    .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
-    .btn-primary { background: #00d4ff; color: #000; }
-    .btn-primary:hover { background: #00b8e6; }
-    .btn-secondary { background: #333; color: #fff; }
-    .btn-secondary:hover { background: #444; }
-    .input { width: 100%; padding: 12px; border: 1px solid #333; border-radius: 8px; background: #0f0f23; color: #fff; margin-bottom: 12px; }
-    .input:focus { outline: none; border-color: #00d4ff; }
-    textarea.input { min-height: 150px; resize: vertical; font-family: monospace; }
-    .upload-zone { border: 2px dashed #333; border-radius: 16px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.2s; }
-    .upload-zone:hover, .upload-zone.dragover { border-color: #00d4ff; background: rgba(0, 212, 255, 0.05); }
-    .upload-zone .icon { font-size: 48px; margin-bottom: 16px; }
-    .upload-zone p { color: #888; }
-    .node-group { margin-bottom: 20px; padding: 16px; background: #0f0f23; border-radius: 12px; }
-    .node-group h3 { margin-bottom: 12px; font-size: 16px; }
-    .node-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #1a1a2e; border-radius: 8px; margin-bottom: 8px; }
-    .node-info { flex: 1; }
-    .node-name { font-weight: 500; margin-bottom: 4px; }
-    .node-type { font-size: 12px; color: #888; }
-    .node-select { width: 200px; }
-    select.input { width: auto; margin-bottom: 0; }
-    .warning { padding: 12px; background: rgba(255, 193, 7, 0.1); border: 1px solid #ffc107; color: #ffc107; border-radius: 8px; margin-bottom: 16px; }
-    .message { padding: 12px; border-radius: 8px; margin-bottom: 16px; }
-    .message.success { background: rgba(0, 212, 255, 0.1); border: 1px solid #00d4ff; color: #00d4ff; }
-    .message.error { background: rgba(255, 0, 0, 0.1); border: 1px solid #ff4444; color: #ff4444; }
-    .loading { text-align: center; padding: 40px; color: #888; }
-    .hidden { display: none; }
-    .workflow-preview { background: #0f0f23; border-radius: 12px; padding: 20px; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto; }
+    /* Progress Steps */
+    .import-progress {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: var(--space-8);
+      gap: 0;
+    }
+
+    .progress-step {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+      position: relative;
+    }
+
+    .progress-step:first-child {
+      border-radius: var(--radius-xl) 0 0 var(--radius-xl);
+    }
+
+    .progress-step:last-child {
+      border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
+    }
+
+    .progress-step + .progress-step {
+      margin-left: -1px;
+    }
+
+    .progress-step.active {
+      background: var(--color-brand);
+      border-color: var(--color-brand);
+      color: #000;
+      font-weight: var(--weight-semibold);
+      z-index: 1;
+      box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+    }
+
+    .progress-step.done {
+      background: rgba(74, 222, 128, 0.1);
+      border-color: var(--color-success);
+      color: var(--color-success);
+    }
+
+    .progress-step .step-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: var(--weight-bold);
+    }
+
+    .progress-step.active .step-num {
+      background: rgba(0,0,0,0.2);
+      color: #000;
+    }
+
+    .progress-step.done .step-num {
+      background: var(--color-success);
+      color: #fff;
+    }
+
+    /* Node Graph */
+    .node-graph {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      position: relative;
+      padding-left: 30px;
+    }
+
+    .node-graph::before {
+      content: '';
+      position: absolute;
+      left: 13px;
+      top: 20px;
+      bottom: 20px;
+      width: 2px;
+      background: var(--color-border);
+    }
+
+    .graph-node {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-3) var(--space-4);
+      background: var(--color-bg-secondary);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-border);
+      margin-bottom: var(--space-3);
+      position: relative;
+      transition: border-color var(--transition-fast);
+    }
+
+    .graph-node::before {
+      content: '';
+      position: absolute;
+      left: -25px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--color-border);
+      border: 2px solid var(--color-bg-primary);
+    }
+
+    .graph-node:hover {
+      border-color: var(--color-brand);
+    }
+
+    .graph-node.llm-node::before { background: var(--gradient-brand); }
+    .graph-node.image-node::before { background: var(--gradient-accent); }
+    .graph-node.video-node::before { background: var(--gradient-warm); }
+    .graph-node.http-node::before { background: #f59e0b; }
+    .graph-node.knowledge-node::before { background: #4ade80; }
+    .graph-node.plugin-node::before { background: #a78bfa; }
+    .graph-node.unsupported-node::before { background: var(--color-error); }
+
+    .graph-node-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .graph-node.llm-node .graph-node-icon { background: rgba(0, 212, 255, 0.15); }
+    .graph-node.image-node .graph-node-icon { background: rgba(102, 126, 234, 0.15); }
+    .graph-node.video-node .graph-node-icon { background: rgba(245, 87, 108, 0.15); }
+    .graph-node.http-node .graph-node-icon { background: rgba(245, 158, 11, 0.15); }
+    .graph-node.knowledge-node .graph-node-icon { background: rgba(74, 222, 128, 0.15); }
+    .graph-node.plugin-node .graph-node-icon { background: rgba(167, 139, 250, 0.15); }
+    .graph-node.unsupported-node .graph-node-icon { background: rgba(255, 68, 68, 0.15); }
+
+    .graph-node-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .graph-node-name {
+      font-weight: var(--weight-medium);
+      font-size: var(--text-sm);
+      margin-bottom: 2px;
+    }
+
+    .graph-node-type {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+
+    .graph-node-mapping {
+      flex-shrink: 0;
+    }
+
+    .graph-node-mapping select {
+      min-width: 120px;
+      margin-bottom: 0;
+    }
+
+    /* Arrow connector between steps */
+    .step-connector {
+      display: flex;
+      align-items: center;
+      color: var(--color-text-muted);
+      font-size: 18px;
+      padding: 0 var(--space-1);
+    }
+
+    /* Import progress bar */
+    .import-progress-bar {
+      height: 4px;
+      background: var(--color-border);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: var(--space-6);
+    }
+
+    .import-progress-fill {
+      height: 100%;
+      background: var(--gradient-brand);
+      border-radius: 2px;
+      transition: width 1s ease;
+    }
+
+    /* Success state */
+    .success-state {
+      text-align: center;
+      padding: var(--space-10);
+    }
+
+    .success-state .success-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(74, 222, 128, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto var(--space-5);
+      font-size: 36px;
+      animation: successPop 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes successPop {
+      0% { transform: scale(0); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    .success-state h2 {
+      font-size: var(--text-2xl);
+      margin-bottom: var(--space-2);
+    }
+
+    .success-state p {
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-6);
+    }
+
+    /* Import status stream */
+    .import-status-stream {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      margin: var(--space-4) 0;
+    }
+
+    .import-status-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-3);
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+      opacity: 0;
+      transform: translateY(8px);
+      animation: statusIn 0.3s ease forwards;
+    }
+
+    @keyframes statusIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .import-status-item .status-icon {
+      width: 20px;
+      text-align: center;
+    }
+
+    .import-status-item.done {
+      color: var(--color-success);
+    }
+
+    .import-status-item.error {
+      color: var(--color-error);
+    }
+
+    .import-status-item.pending .status-icon {
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* Node category badges */
+    .node-category-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      font-size: 11px;
+      font-weight: var(--weight-medium);
+    }
+
+    .node-category-badge.llm { background: rgba(0, 212, 255, 0.15); color: var(--color-brand); }
+    .node-category-badge.image { background: rgba(102, 126, 234, 0.15); color: #667eea; }
+    .node-category-badge.video { background: rgba(245, 87, 108, 0.15); color: #f5576c; }
+    .node-category-badge.http { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+    .node-category-badge.knowledge { background: rgba(74, 222, 128, 0.15); color: #4ade80; }
+    .node-category-badge.plugin { background: rgba(167, 139, 250, 0.15); color: #a78bfa; }
+    .node-category-badge.unsupported { background: rgba(255, 68, 68, 0.15); color: var(--color-error); }
+
+    /* Step content */
+    .step-section {
+      animation: fadeIn 0.3s ease;
+    }
+
+    /* Flow arrow decoration */
+    .node-flow-arrow {
+      text-align: center;
+      color: var(--color-text-muted);
+      font-size: 14px;
+      padding: 2px 0;
+      margin-left: -10px;
+    }
+
+    @media (max-width: 768px) {
+      .graph-node {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .graph-node-mapping {
+        width: 100%;
+      }
+      .graph-node-mapping select {
+        width: 100%;
+      }
+      .progress-step {
+        padding: var(--space-1) var(--space-2);
+        font-size: 11px;
+      }
+      .progress-step .step-num {
+        width: 20px;
+        height: 20px;
+        font-size: 10px;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="app">
-    <div class="sidebar">
-      <a href="dashboard.html" class="logo">MatrixGrow</a>
-      <nav>
-        <div class="nav-item" onclick="window.location.href='dashboard.html'">控制台</div>
-        <div class="nav-item" onclick="window.location.href='agent.html'">AI 助手</div>
-        <div class="nav-item" onclick="window.location.href='workflows.html'">工作流商店</div>
-        <div class="nav-item active">导入工作流</div>
-        <div class="nav-item" onclick="window.location.href='webhooks.html'">Webhook</div>
-        <div class="nav-item" onclick="window.location.href='subscription.html'">订阅</div>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo">MatrixGrow</div>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="nav-item">控制台</a>
+        <a href="agent.html" class="nav-item">AI 助手</a>
+        <a href="workflows.html" class="nav-item">工作流商店</a>
+        <a href="workflow-import.html" class="nav-item active">导入工作流</a>
+        <a href="webhooks.html" class="nav-item">Webhook</a>
+        <a href="subscription.html" class="nav-item">订阅</a>
       </nav>
-      <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid #333;">
-        <div class="nav-item" onclick="logout()">退出登录</div>
+      <div style="margin-top: auto; padding-top: var(--space-4); border-top: 1px solid var(--color-border);">
+        <a href="dashboard.html#settings" class="nav-item">设置</a>
+        <button class="nav-item" onclick="handleLogout()">退出登录</button>
       </div>
-    </div>
+    </aside>
 
-    <div class="main">
-      <div class="header">
+    <main class="main-content">
+      <div class="page-header">
         <h1>导入工作流</h1>
         <span id="tier-badge" class="tier-badge tier-free">免费版</span>
       </div>
 
-      <!-- Step 1: 上传 -->
-      <div id="step-upload" class="card">
-        <h2>第一步：上传或粘贴工作流</h2>
-        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
-          <div class="icon">📁</div>
-          <p>拖拽文件到此处，或点击选择</p>
-          <p style="margin-top: 8px; font-size: 12px;">支持 Coze (.json) 或 Dify (.json) 格式</p>
+      <!-- Progress Steps -->
+      <div class="import-progress" id="step-indicator">
+        <div class="progress-step active" data-step="1">
+          <span class="step-num">1</span>
+          <span>上传文件</span>
         </div>
-        <input type="file" id="file-input" accept=".json" style="display: none;">
-        <div style="margin-top: 16px;">
-          <p style="color: #888; margin-bottom: 8px;">或直接粘贴 JSON 内容：</p>
-          <textarea class="input" id="json-input" placeholder="粘贴工作流 JSON 内容..."></textarea>
-          <button class="btn btn-primary" onclick="parseJson()">解析</button>
+        <span class="step-connector">&#x2192;</span>
+        <div class="progress-step" data-step="2">
+          <span class="step-num">2</span>
+          <span>节点映射</span>
         </div>
-      </div>
-
-      <!-- Step 2: 节点映射 -->
-      <div id="step-mapping" class="card hidden">
-        <h2>第二步：配置节点映射</h2>
-        <div id="mapping-content">
-          <div class="loading">加载中...</div>
-        </div>
-        <div style="display: flex; gap: 12px; margin-top: 20px;">
-          <button class="btn btn-secondary" onclick="goBack()">返回</button>
-          <button class="btn btn-primary" onclick="convertWorkflow()">转换并预览</button>
+        <span class="step-connector">&#x2192;</span>
+        <div class="progress-step" data-step="3">
+          <span class="step-num">3</span>
+          <span>安装完成</span>
         </div>
       </div>
 
-      <!-- Step 3: 预览并安装 -->
-      <div id="step-preview" class="card hidden">
-        <h2>第三步：预览并安装</h2>
-        <div id="preview-content">
-          <div class="loading">加载中...</div>
-        </div>
-        <div style="display: flex; gap: 12px; margin-top: 20px;">
-          <button class="btn btn-secondary" onclick="goBackToMapping()">返回映射</button>
-          <button class="btn btn-primary" onclick="installWorkflow()">安装到我的工作流</button>
+      <!-- Import Progress Bar (hidden until import starts) -->
+      <div class="import-progress-bar" id="import-progress-bar" style="display:none;">
+        <div class="import-progress-fill" id="import-progress-fill" style="width:0%;"></div>
+      </div>
+
+      <!-- Step 1: Upload -->
+      <div id="step-upload" class="step-section">
+        <div class="card">
+          <h2>第一步：上传或粘贴工作流</h2>
+          <p style="color: var(--color-text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-4);">
+            支持从 Coze、Dify 等平台导出的 JSON 工作流文件
+          </p>
+          <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+            <div style="font-size: 48px; margin-bottom: var(--space-3);">&#x1F4C1;</div>
+            <p style="font-weight: var(--weight-medium);">拖拽文件到此处，或点击选择</p>
+            <p style="margin-top: var(--space-1); font-size: var(--text-xs); color: var(--color-text-muted);">
+              支持 Coze (.json) 或 Dify (.json) 格式
+            </p>
+          </div>
+          <input type="file" id="file-input" accept=".json" style="display: none;">
+
+          <div class="auth-divider" style="margin: var(--space-5) 0;">
+            <span>或直接粘贴 JSON 内容</span>
+          </div>
+
+          <div class="input-group">
+            <textarea class="input" id="json-input" placeholder="粘贴工作流 JSON 内容..." style="min-height:150px; font-family: monospace; font-size: var(--text-xs);"></textarea>
+          </div>
+          <button class="btn btn-primary btn-lg btn-block" onclick="parseJson()">解析工作流</button>
         </div>
       </div>
-    </div>
+
+      <!-- Step 2: Node Mapping -->
+      <div id="step-mapping" class="step-section" style="display:none;">
+        <div class="card">
+          <h2>第二步：配置节点映射</h2>
+          <p style="color: var(--color-text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-4);">
+            为检测到的工作流节点选择合适的 AI 服务商
+          </p>
+          <div id="mapping-content">
+            <div class="loading-state">
+              <div class="spinner"></div>
+              <p>解析节点中...</p>
+            </div>
+          </div>
+          <div style="display: flex; gap: var(--space-3); margin-top: var(--space-5);">
+            <button class="btn btn-secondary btn-lg" onclick="goBack()">返回</button>
+            <button class="btn btn-primary btn-lg" style="flex:1;" onclick="convertWorkflow()">转换并预览</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Preview -->
+      <div id="step-preview" class="step-section" style="display:none;">
+        <div class="card">
+          <h2>第三步：预览并安装</h2>
+          <div id="preview-content">
+            <div class="loading-state">
+              <div class="spinner"></div>
+              <p>生成预览中...</p>
+            </div>
+          </div>
+          <div style="display: flex; gap: var(--space-3); margin-top: var(--space-5);">
+            <button class="btn btn-secondary btn-lg" onclick="goBackToMapping()">返回映射</button>
+            <button class="btn btn-primary btn-lg" style="flex:1;" onclick="installWorkflow()">
+              <span id="install-btn-text">安装到我的工作流</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Result (hidden until install completes) -->
+      <div id="step-result" class="step-section" style="display:none;">
+        <div class="card">
+          <div class="success-state" id="success-state">
+            <div class="success-icon">&#x2714;</div>
+            <h2>工作流导入成功！</h2>
+            <p>工作流已安装到你的账户，可以在「工作流商店」中查看和管理</p>
+            <div style="display: flex; gap: var(--space-3); justify-content: center;">
+              <a href="workflows.html" class="btn btn-primary btn-lg">查看我的工作流</a>
+              <button class="btn btn-secondary btn-lg" onclick="resetImport()">继续导入</button>
+            </div>
+          </div>
+          <div id="error-state" style="display:none;" class="empty-state">
+            <div class="empty-icon">&#x26A0;</div>
+            <h3>导入失败</h3>
+            <p id="error-message">未知错误</p>
+            <button class="btn btn-primary" onclick="resetImport()">重新尝试</button>
+          </div>
+        </div>
+      </div>
+    </main>
   </div>
 
+  <script src="/js/shared.js"></script>
   <script>
-    const API_BASE = '/api';
-    let token = localStorage.getItem('token');
-    let currentImportId = null;
-    let detectedNodes = {};
-    let nodeMappings = {};
+    (function() {
+      const API_BASE = '/api';
+      let currentImportId = null;
+      let detectedNodes = {};
+      let nodeMappings = {};
 
-    async function checkAuth() {
-      if (!token) {
-        window.location.href = '/login.html';
-        return false;
+      async function init() {
+        if (!await MatrixGrow.checkAuth()) return;
+        await loadTierBadge();
+        initDragDrop();
       }
-      try {
-        const res = await fetch(`${API_BASE}/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
-        if (!res.ok) throw new Error('Unauthorized');
-        return true;
-      } catch {
-        localStorage.removeItem('token');
-        window.location.href = '/login.html';
-        return false;
-      }
-    }
 
-    async function loadUserInfo() {
-      if (!await checkAuth()) return;
-      try {
-        const res = await fetch(`${API_BASE}/subscription`, { headers: { Authorization: `Bearer ${token}` } });
-        if (res.ok) {
-          const sub = await res.json();
-          const badge = document.getElementById('tier-badge');
-          badge.className = `tier-badge tier-${sub.tier}`;
-          const tierNames = { free: '免费版', pro: 'Pro', promax: 'ProMax' };
-          badge.textContent = tierNames[sub.tier];
-        }
-      } catch (e) {
-        console.error('Failed to load user info:', e);
-      }
-    }
-
-    const uploadZone = document.getElementById('upload-zone');
-    const fileInput = document.getElementById('file-input');
-
-    uploadZone.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      uploadZone.classList.add('dragover');
-    });
-    uploadZone.addEventListener('dragleave', () => {
-      uploadZone.classList.remove('dragover');
-    });
-    uploadZone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      uploadZone.classList.remove('dragover');
-      const file = e.dataTransfer.files[0];
-      if (file) handleFile(file);
-    });
-    fileInput.addEventListener('change', (e) => {
-      if (e.target.files[0]) handleFile(e.target.files[0]);
-    });
-
-    async function handleFile(file) {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
+      async function loadTierBadge() {
         try {
-          const content = e.target.result;
-          await submitImport(content);
-        } catch (err) {
-          showMessage('文件解析失败: ' + err.message, 'error');
-        }
-      };
-      reader.readAsText(file);
-    }
-
-    async function parseJson() {
-      const content = document.getElementById('json-input').value.trim();
-      if (!content) {
-        showMessage('请输入 JSON 内容', 'error');
-        return;
+          const data = await MatrixGrow.fetchJSON('/api/subscription');
+          const badge = document.getElementById('tier-badge');
+          badge.className = `tier-badge tier-${data.tier}`;
+          const names = { free: 'Free', pro: 'Pro', promax: 'ProMax' };
+          badge.textContent = names[data.tier] || data.tier;
+        } catch (e) { /* ignore */ }
       }
-      await submitImport(content);
-    }
 
-    async function submitImport(content) {
-      try {
-        const res = await fetch(`${API_BASE}/workflow/import`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ content, auto_detect: true })
+      function updateStep(active) {
+        document.querySelectorAll('.progress-step').forEach((el, i) => {
+          el.classList.remove('active', 'done');
+          if (i + 1 < active) el.classList.add('done');
+          if (i + 1 === active) el.classList.add('active');
         });
+      }
 
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.error || '导入失败');
+      function showProgressBar(show) {
+        document.getElementById('import-progress-bar').style.display = show ? 'block' : 'none';
+      }
+
+      function setProgress(pct) {
+        document.getElementById('import-progress-fill').style.width = pct + '%';
+      }
+
+      function showSection(id) {
+        ['step-upload', 'step-mapping', 'step-preview', 'step-result'].forEach(s => {
+          document.getElementById(s).style.display = s === id ? 'block' : 'none';
+        });
+      }
+
+      function initDragDrop() {
+        const zone = document.getElementById('upload-zone');
+        const fileInput = document.getElementById('file-input');
+
+        zone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          zone.classList.add('dragover');
+        });
+        zone.addEventListener('dragleave', () => {
+          zone.classList.remove('dragover');
+        });
+        zone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          zone.classList.remove('dragover');
+          const file = e.dataTransfer.files[0];
+          if (file) handleFile(file);
+        });
+        fileInput.addEventListener('change', (e) => {
+          if (e.target.files[0]) handleFile(e.target.files[0]);
+        });
+      }
+
+      async function handleFile(file) {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          await submitImport(e.target.result);
+        };
+        reader.readAsText(file);
+      }
+
+      async function parseJson() {
+        const content = document.getElementById('json-input').value.trim();
+        if (!content) {
+          MatrixGrow.toast.warning('请粘贴要导入的 JSON 内容');
+          return;
+        }
+        await submitImport(content);
+      }
+
+      async function submitImport(content) {
+        updateStep(2);
+        showProgressBar(true);
+        setProgress(10);
+        showSection('step-mapping');
+
+        // Show status items
+        document.getElementById('mapping-content').innerHTML = `
+          <div class="import-status-stream" id="import-status">
+            <div class="import-status-item pending" data-status="parsing">
+              <span class="status-icon">&#x23F3;</span>
+              <span>解析工作流文件...</span>
+            </div>
+            <div class="import-status-item" data-status="detecting">
+              <span class="status-icon">&#x1F50D;</span>
+              <span>检测节点类型...</span>
+            </div>
+            <div class="import-status-item" data-status="mapping">
+              <span class="status-icon">&#x1F517;</span>
+              <span>生成映射建议...</span>
+            </div>
+          </div>
+        `;
+
+        setProgress(30);
+
+        try {
+          const res = await fetch(`${API_BASE}/workflow/import`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...MatrixGrow.authHeaders()
+            },
+            body: JSON.stringify({ content, auto_detect: true })
+          });
+
+          setProgress(60);
+
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.error || '导入解析失败');
+          }
+
+          const data = await res.json();
+          currentImportId = data.importId;
+          detectedNodes = data.detectedNodes || {};
+
+          setProgress(80);
+
+          // Mark status as done
+          document.querySelectorAll('.import-status-item').forEach(el => {
+            el.classList.remove('pending');
+            el.classList.add('done');
+            el.querySelector('.status-icon').textContent = '✔';
+          });
+
+          setProgress(100);
+          setTimeout(() => {
+            showProgressBar(false);
+            renderMapping(data);
+          }, 400);
+        } catch (e) {
+          setProgress(100);
+          // Mark error
+          document.querySelectorAll('.import-status-item').forEach(el => {
+            el.classList.remove('pending');
+            if (el.dataset.status === 'parsing') {
+              el.classList.add('error');
+              el.querySelector('.status-icon').textContent = '✘';
+              el.querySelector('span:last-child').textContent = '解析失败: ' + e.message;
+            } else {
+              el.style.opacity = '0.3';
+            }
+          });
+          setTimeout(() => showProgressBar(false), 1000);
+          MatrixGrow.toast.error('导入失败: ' + e.message);
+        }
+      }
+
+      function renderMapping(data) {
+        document.getElementById('step-mapping').style.display = 'block';
+
+        const nodeTypes = [
+          { key: 'llm', title: 'LLM / 语言模型', icon: '🤖', cls: 'llm' },
+          { key: 'image_gen', title: '图像生成', icon: '🎨', cls: 'image' },
+          { key: 'video_gen', title: '视频生成', icon: '🎬', cls: 'video' },
+          { key: 'http', title: 'HTTP 请求', icon: '🌐', cls: 'http' },
+          { key: 'knowledge', title: '知识库', icon: '📚', cls: 'knowledge' },
+          { key: 'plugin', title: '插件', icon: '🔌', cls: 'plugin' },
+          { key: 'unsupported', title: '暂不支持', icon: '⚠', cls: 'unsupported' }
+        ];
+
+        let hasNodes = false;
+        let graphHtml = '<div class="node-graph">';
+
+        for (const { key, title, icon, cls } of nodeTypes) {
+          const nodes = detectedNodes[key];
+          if (!nodes || nodes.length === 0) continue;
+          hasNodes = true;
+
+          for (let i = 0; i < nodes.length; i++) {
+            const node = nodes[i];
+            graphHtml += `
+              <div class="graph-node ${cls}-node">
+                <div class="graph-node-icon">${icon}</div>
+                <div class="graph-node-info">
+                  <div class="graph-node-name">
+                    ${node.label || '未命名节点'}
+                    <span class="node-category-badge ${cls}" style="margin-left: var(--space-2);">${title}</span>
+                  </div>
+                  <div class="graph-node-type">原始类型: ${node.original_type || key}</div>
+                </div>
+                <div class="graph-node-mapping">
+                  ${key === 'llm' ? `
+                    <select class="input node-select" data-node-id="${node.id}" style="min-width:130px;">
+                      <option value="deepseek">DeepSeek</option>
+                      <option value="claude">Claude</option>
+                      <option value="openai">OpenAI</option>
+                      <option value="qwen">Qwen</option>
+                    </select>
+                  ` : key === 'image_gen' ? `
+                    <select class="input node-select" data-node-id="${node.id}" style="min-width:130px;">
+                      <option value="fal">Fal.ai</option>
+                      <option value="replicate">Replicate</option>
+                    </select>
+                  ` : key === 'video_gen' ? `
+                    <select class="input node-select" data-node-id="${node.id}" style="min-width:130px;">
+                      <option value="heygen">HeyGen</option>
+                    </select>
+                  ` : key !== 'unsupported' ? `
+                    <span style="color: var(--color-success); font-size: var(--text-sm);">
+                      &#x2714; 自动映射
+                    </span>
+                  ` : `
+                    <span style="color: var(--color-error); font-size: var(--text-sm);">
+                      &#x26A0; 需手动配置
+                    </span>
+                  `}
+                </div>
+              </div>
+            `;
+
+            if (i < nodes.length - 1) {
+              graphHtml += `<div class="node-flow-arrow">&#x2193;</div>`;
+            }
+          }
+
+          graphHtml += `<div class="node-flow-arrow">&#x2193;</div>`;
         }
 
-        const data = await res.json();
-        currentImportId = data.importId;
-        detectedNodes = data.detectedNodes || {};
-        renderMapping(data);
-      } catch (e) {
-        showMessage(e.message, 'error');
+        graphHtml += '</div>';
+
+        if (!hasNodes) {
+          graphHtml = '<div class="empty-state"><div class="empty-icon">&#x2705;</div><h3>无需配置</h3><p>未检测到需要映射的节点，可直接转换</p></div>';
+        }
+
+        document.getElementById('mapping-content').innerHTML = graphHtml;
       }
-    }
 
-    function renderMapping(data) {
-      document.getElementById('step-upload').classList.add('hidden');
-      document.getElementById('step-preview').classList.add('hidden');
-      document.getElementById('step-mapping').classList.remove('hidden');
+      function collectMappings() {
+        const mappings = {};
+        document.querySelectorAll('.node-select').forEach(select => {
+          const nodeId = select.dataset.nodeId;
+          if (!mappings[nodeId]) mappings[nodeId] = {};
+          mappings[nodeId].provider = select.value;
+        });
+        return mappings;
+      }
 
-      let html = '';
-      const nodeTypes = [
-        { key: 'llm', title: '🤖 LLM 节点' },
-        { key: 'image_gen', title: '🎨 图像生成节点' },
-        { key: 'video_gen', title: '🎬 视频生成节点' },
-        { key: 'http', title: '🌐 HTTP 请求节点' },
-        { key: 'knowledge', title: '📚 知识库节点' },
-        { key: 'plugin', title: '🔌 插件节点' },
-        { key: 'unsupported', title: '⚠️ 不支持的节点' }
-      ];
+      async function convertWorkflow() {
+        nodeMappings = collectMappings();
+        updateStep(3);
+        showProgressBar(true);
+        setProgress(10);
+        showSection('step-preview');
 
-      let hasNodes = false;
-      for (const { key, title } of nodeTypes) {
-        const nodes = detectedNodes[key];
-        if (nodes && nodes.length > 0) {
-          hasNodes = true;
-          html += `<div class="node-group">
-            <h3>${title}</h3>`;
-          
-          for (const node of nodes) {
-            html += `<div class="node-item">
-              <div class="node-info">
-                <div class="node-name">${node.label || '未命名节点'}</div>
-                <div class="node-type">原始类型: ${node.original_type || key}</div>
-              </div>
-              ${key === 'llm' ? `
-              <select class="input node-select" data-node-id="${node.id}" data-type="provider">
-                <option value="deepseek">DeepSeek</option>
-                <option value="claude">Claude</option>
-                <option value="openai">OpenAI</option>
-                <option value="qwen">Qwen</option>
-              </select>
-              ` : key === 'image_gen' ? `
-              <select class="input node-select" data-node-id="${node.id}" data-type="provider">
-                <option value="fal">Fal.ai</option>
-                <option value="replicate">Replicate</option>
-              </select>
-              ` : key === 'video_gen' ? `
-              <select class="input node-select" data-node-id="${node.id}" data-type="provider">
-                <option value="heygen">HeyGen</option>
-              </select>
-              ` : key !== 'unsupported' ? `<span style="color: #888;">自动映射</span>` : `<span style="color: #ff4444;">需手动配置</span>`}
-            </div>`;
+        document.getElementById('preview-content').innerHTML = `
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <p>正在转换工作流...</p>
+          </div>
+        `;
+
+        setProgress(40);
+
+        try {
+          const res = await fetch(`${API_BASE}/workflow/import/${currentImportId}/mapping`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              ...MatrixGrow.authHeaders()
+            },
+            body: JSON.stringify({ nodeMappings })
+          });
+
+          setProgress(70);
+
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.error || '转换失败');
           }
-          
+
+          const data = await res.json();
+          setProgress(100);
+          setTimeout(() => {
+            showProgressBar(false);
+            renderPreview(data);
+          }, 400);
+        } catch (e) {
+          showProgressBar(false);
+          document.getElementById('preview-content').innerHTML = `
+            <div class="empty-state">
+              <div class="empty-icon">&#x26A0;</div>
+              <h3>转换失败</h3>
+              <p>${e.message}</p>
+            </div>
+          `;
+          MatrixGrow.toast.error('转换失败: ' + e.message);
+        }
+      }
+
+      function renderPreview(data) {
+        showSection('step-preview');
+
+        let html = '';
+
+        if (data.warnings && data.warnings.length > 0) {
+          html += `
+            <div class="message message-warning" style="margin-bottom: var(--space-4);">
+              <strong>注意事项：</strong>
+              <ul style="margin-top: var(--space-2); margin-left: var(--space-4);">
+                ${data.warnings.map(w => `<li style="margin-bottom: var(--space-1);">${w}</li>`).join('')}
+              </ul>
+            </div>
+          `;
+        }
+
+        if (data.nodes) {
+          html += `<h3 style="margin-bottom: var(--space-3);">转换后的节点 (${data.nodes.length} 个)</h3>`;
+          html += `<div style="display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-4);">`;
+          for (const node of data.nodes) {
+            const statusIcon = node.status === 'ok' ? '✅' : node.status === 'warning' ? '⚠️' : '❌';
+            html += `<span class="tag">${statusIcon} ${node.name || node.type}</span>`;
+          }
           html += `</div>`;
         }
-      }
 
-      if (!hasNodes) {
-        html = '<p style="color: #888;">未检测到需要配置的节点，可直接转换</p>';
-      }
-
-      document.getElementById('mapping-content').innerHTML = html;
-    }
-
-    function collectMappings() {
-      const mappings = {};
-      document.querySelectorAll('.node-select').forEach(select => {
-        const nodeId = select.dataset.nodeId;
-        if (!mappings[nodeId]) mappings[nodeId] = {};
-        mappings[nodeId].provider = select.value;
-      });
-      return mappings;
-    }
-
-    async function convertWorkflow() {
-      nodeMappings = collectMappings();
-      
-      try {
-        const res = await fetch(`${API_BASE}/workflow/import/${currentImportId}/mapping`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ nodeMappings })
-        });
-
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.error || '转换失败');
+        if (data.n8nWorkflow) {
+          html += `
+            <div class="code-block" style="max-height: 300px;">
+              <pre>${JSON.stringify(data.n8nWorkflow, null, 2)}</pre>
+            </div>
+          `;
         }
 
-        const data = await res.json();
-        renderPreview(data);
-      } catch (e) {
-        showMessage(e.message, 'error');
-      }
-    }
+        html += `
+          <div style="margin-top: var(--space-4);">
+            <div class="input-group">
+              <label class="label" for="workflow-name">工作流名称</label>
+              <input type="text" class="input" id="workflow-name" placeholder="给你的工作流起个名字" value="导入的工作流">
+            </div>
+          </div>
+        `;
 
-    function renderPreview(data) {
-      document.getElementById('step-mapping').classList.add('hidden');
-      document.getElementById('step-preview').classList.remove('hidden');
-
-      let html = '';
-
-      if (data.warnings && data.warnings.length > 0) {
-        html += `<div class="warning">
-          <strong>注意事项：</strong>
-          <ul style="margin-top: 8px; margin-left: 20px;">
-            ${data.warnings.map(w => `<li>${w}</li>`).join('')}
-          </ul>
-        </div>`;
+        document.getElementById('preview-content').innerHTML = html;
       }
 
-      html += `<h3 style="margin-bottom: 16px;">转换后的工作流预览</h3>`;
-      
-      if (data.n8nWorkflow) {
-        html += `<div class="workflow-preview">
-          <pre>${JSON.stringify(data.n8nWorkflow, null, 2)}</pre>
-        </div>`;
-      }
+      async function installWorkflow() {
+        const name = document.getElementById('workflow-name').value.trim() || '导入的工作流';
+        const btn = document.getElementById('install-btn-text');
+        btn.textContent = '安装中...';
 
-      html += `<div style="margin-top: 16px;">
-        <input type="text" class="input" id="workflow-name" placeholder="工作流名称" value="导入的工作流">
-      </div>`;
+        showProgressBar(true);
+        setProgress(30);
 
-      document.getElementById('preview-content').innerHTML = html;
-    }
+        try {
+          const res = await fetch(`${API_BASE}/workflow/import/${currentImportId}/install`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...MatrixGrow.authHeaders()
+            },
+            body: JSON.stringify({ name })
+          });
 
-    async function installWorkflow() {
-      const name = document.getElementById('workflow-name').value || '导入的工作流';
-      
-      try {
-        const res = await fetch(`${API_BASE}/workflow/import/${currentImportId}/install`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ name })
-        });
+          setProgress(70);
 
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.error || '安装失败');
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.error || '安装失败');
+          }
+
+          setProgress(100);
+          setTimeout(() => {
+            showProgressBar(false);
+            showSection('step-result');
+            document.getElementById('success-state').style.display = 'block';
+            document.getElementById('error-state').style.display = 'none';
+            updateStep(3);
+            document.querySelectorAll('.progress-step')[2].classList.add('done');
+            MatrixGrow.toast.success('工作流安装成功！');
+          }, 500);
+        } catch (e) {
+          showProgressBar(false);
+          btn.textContent = '安装到我的工作流';
+          showSection('step-result');
+          document.getElementById('success-state').style.display = 'none';
+          document.getElementById('error-state').style.display = 'block';
+          document.getElementById('error-message').textContent = e.message;
+          MatrixGrow.toast.error('安装失败: ' + e.message);
         }
-
-        showMessage('工作流安装成功！', 'success');
-        setTimeout(() => {
-          window.location.href = 'workflows.html';
-        }, 1500);
-      } catch (e) {
-        showMessage(e.message, 'error');
       }
-    }
 
-    function goBack() {
-      document.getElementById('step-mapping').classList.add('hidden');
-      document.getElementById('step-upload').classList.remove('hidden');
-      currentImportId = null;
-    }
+      function goBack() {
+        showSection('step-upload');
+        updateStep(1);
+        showProgressBar(false);
+        currentImportId = null;
+      }
 
-    function goBackToMapping() {
-      document.getElementById('step-preview').classList.add('hidden');
-      document.getElementById('step-mapping').classList.remove('hidden');
-    }
+      function goBackToMapping() {
+        showSection('step-mapping');
+        updateStep(2);
+      }
 
-    function showMessage(text, type = 'success') {
-      const msg = document.createElement('div');
-      msg.className = `message ${type}`;
-      msg.textContent = text;
-      document.querySelector('.main').insertBefore(msg, document.querySelector('.card'));
-      setTimeout(() => msg.remove(), 5000);
-    }
+      function resetImport() {
+        showSection('step-upload');
+        updateStep(1);
+        showProgressBar(false);
+        currentImportId = null;
+        detectedNodes = {};
+        document.getElementById('json-input').value = '';
+        document.getElementById('file-input').value = '';
+      }
 
-    function logout() {
-      localStorage.removeItem('token');
-      window.location.href = '/login.html';
-    }
+      async function handleLogout() {
+        const confirmed = await MatrixGrow.confirm.confirm('退出登录', '确定要退出登录吗？', {
+          confirmText: '退出',
+          danger: true
+        });
+        if (confirmed) {
+          MatrixGrow.logout();
+        }
+      }
 
-    loadUserInfo();
+      window.parseJson = parseJson;
+      window.goBack = goBack;
+      window.goBackToMapping = goBackToMapping;
+      window.convertWorkflow = convertWorkflow;
+      window.installWorkflow = installWorkflow;
+      window.resetImport = resetImport;
+      window.handleLogout = handleLogout;
+
+      init();
+    })();
   </script>
 </body>
 </html>

@@ -17,7 +17,7 @@
     "start": "node server.js",
     "dev": "node server.js",
     "demo": "node demo.js",
-    "test": "node tests/index.js",
+    "test": "node --test tests/test-*.js",
     "install:playwright": "npx playwright install chromium",
     "bootstrap:cookies": "node scripts/bootstrap-cookies.js",
     "electron": "electron .",

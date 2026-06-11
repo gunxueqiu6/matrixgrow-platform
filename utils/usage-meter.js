@@ -64,7 +64,10 @@ class UsageMeter {
       for (const type of ['image', 'video', 'text']) {
         const used = await db.getMonthlyUsage(userId, type);
         stats[type].used = used;
-        stats[type].limit = tierLimits[`ai${type.charAt(0).toUpperCase() + type.slice(1)}PerMonth`] || Infinity;
+        // Handle pluralization: image -> images, video -> videos, text -> text
+        const pluralSuffix = type === 'text' ? '' : 's';
+        const limitKey = `ai${type.charAt(0).toUpperCase() + type.slice(1)}${pluralSuffix}PerMonth`;
+        stats[type].limit = tierLimits[limitKey] !== undefined ? tierLimits[limitKey] : Infinity;
         
         if (stats[type].used > stats[type].limit && stats[type].limit !== Infinity) {
           const overage = stats[type].used - stats[type].limit;

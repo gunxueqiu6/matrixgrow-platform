@@ -4,444 +4,383 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MatrixGrow - Webhook 管理</title>
+  <link rel="stylesheet" href="/css/base.css">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f0f23; color: #fff; }
-    .app { display: flex; min-height: 100vh; }
-    .sidebar { width: 260px; background: #1a1a2e; padding: 20px; display: flex; flex-direction: column; }
-    .logo { font-size: 24px; font-weight: bold; margin-bottom: 40px; color: #00d4ff; }
-    .nav-item { padding: 12px 16px; margin: 4px 0; border-radius: 8px; cursor: pointer; transition: background 0.2s; color: #888; }
-    .nav-item:hover, .nav-item.active { background: #16213e; color: #fff; }
-    .main { flex: 1; padding: 30px; overflow-y: auto; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-    .header h1 { font-size: 28px; }
-    .card { background: #1a1a2e; padding: 24px; border-radius: 16px; margin-bottom: 20px; }
-    .card h2 { margin-bottom: 20px; font-size: 18px; }
-    .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
-    .btn-primary { background: #00d4ff; color: #000; }
-    .btn-primary:hover { background: #00b8e6; }
-    .btn-secondary { background: #333; color: #fff; }
-    .btn-danger { background: #ff4444; color: #fff; }
-    .btn-small { padding: 6px 12px; font-size: 12px; }
-    .input { width: 100%; padding: 12px; border: 1px solid #333; border-radius: 8px; background: #0f0f23; color: #fff; margin-bottom: 12px; }
-    .input:focus { outline: none; border-color: #00d4ff; }
-    .label { display: block; margin-bottom: 6px; color: #888; font-size: 14px; }
-    .loading { text-align: center; padding: 40px; color: #888; }
-    .hidden { display: none; }
-    .message { padding: 12px; border-radius: 8px; margin-bottom: 16px; }
-    .message.success { background: rgba(0, 212, 255, 0.1); border: 1px solid #00d4ff; color: #00d4ff; }
-    .message.error { background: rgba(255, 0, 0, 0.1); border: 1px solid #ff4444; color: #ff4444; }
-    .webhook-item { background: #0f0f23; padding: 20px; border-radius: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-start; }
-    .webhook-info h3 { margin-bottom: 6px; font-size: 16px; }
-    .webhook-info .url { color: #888; font-size: 13px; margin-bottom: 8px; word-break: break-all; }
-    .webhook-info .events { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
-    .webhook-info .event-tag { background: #333; padding: 4px 8px; border-radius: 4px; font-size: 12px; color: #aaa; }
-    .webhook-info .meta { color: #666; font-size: 12px; }
-    .webhook-actions { display: flex; gap: 8px; }
-    .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 12px; margin-bottom: 10px; display: inline-block; }
-    .status-active { background: rgba(0, 212, 255, 0.2); color: #00d4ff; }
-    .status-inactive { background: #333; color: #888; }
+    .webhook-item {
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      margin-bottom: var(--space-3);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: var(--space-4);
+      transition: border-color var(--transition-fast);
+    }
+    .webhook-item:hover { border-color: var(--color-border-hover); }
+
+    .webhook-info { flex: 1; min-width: 0; }
+    .webhook-info h3 { font-size: var(--text-base); font-weight: var(--weight-medium); margin-bottom: var(--space-1); }
+    .webhook-info .url { color: var(--color-text-muted); font-size: var(--text-xs); word-break: break-all; margin-bottom: var(--space-2); font-family: var(--font-mono); }
+    .webhook-info .events { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-bottom: var(--space-2); }
+    .webhook-info .meta { color: var(--color-text-muted); font-size: var(--text-xs); }
+
+    .webhook-actions { display: flex; gap: var(--space-2); flex-shrink: 0; flex-wrap: wrap; }
+
+    .event-card {
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      transition: border-color var(--transition-fast);
+    }
+    .event-card:hover { border-color: var(--color-border-hover); }
+    .event-card h3 { font-size: var(--text-sm); font-weight: var(--weight-semibold); margin-bottom: var(--space-1); font-family: var(--font-mono); }
+    .event-card p { font-size: var(--text-sm); color: var(--color-text-secondary); }
+
     .logs-table { width: 100%; border-collapse: collapse; }
-    .logs-table th, .logs-table td { padding: 12px; text-align: left; border-bottom: 1px solid #333; }
-    .logs-table th { color: #888; font-size: 12px; }
-    .logs-table td { color: #ddd; font-size: 13px; }
-    .log-status-success { color: #00d4ff; }
-    .log-status-error { color: #ff4444; }
-    .checkbox-group { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
-    .checkbox-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #0f0f23; border-radius: 8px; }
-    .checkbox-item input { cursor: pointer; }
-    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-    .tab { padding: 10px 20px; background: #0f0f23; border: none; border-radius: 8px; color: #888; cursor: pointer; }
-    .tab.active { background: #00d4ff; color: #000; }
+    .logs-table th, .logs-table td { padding: var(--space-3) var(--space-4); text-align: left; border-bottom: 1px solid var(--color-border); }
+    .logs-table th { font-size: var(--text-xs); color: var(--color-text-muted); font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: 0.05em; }
+    .logs-table td { font-size: var(--text-sm); color: var(--color-text-primary); }
+    .logs-table tr:hover td { background: var(--color-bg-hover); }
+
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: var(--space-4);
+    }
+
+    .webhook-modal {
+      width: 100%;
+      max-width: 520px;
+    }
   </style>
 </head>
 <body>
-  <div class="app">
-    <div class="sidebar">
-      <div class="logo">MatrixGrow</div>
-      <nav>
-        <div class="nav-item" onclick="window.location.href='dashboard.html'">控制台</div>
-        <div class="nav-item" onclick="window.location.href='agent.html'">AI 助手</div>
-        <div class="nav-item active">Webhook</div>
-        <div class="nav-item" onclick="window.location.href='subscription.html'">订阅</div>
-        <div class="nav-item" onclick="window.location.href='dashboard.html#settings'">设置</div>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <a href="/" class="sidebar-logo">MatrixGrow</a>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="nav-item"><span class="nav-icon">&#x1F4CA;</span>控制台</a>
+        <a href="agent.html" class="nav-item"><span class="nav-icon">&#x1F916;</span>AI 助手</a>
+        <a href="workflows.html" class="nav-item"><span class="nav-icon">&#x1F4E6;</span>工作流商店</a>
+        <a href="workflow-import.html" class="nav-item"><span class="nav-icon">&#x1F4E5;</span>导入工作流</a>
+        <a href="webhooks.html" class="nav-item active"><span class="nav-icon">&#x1F517;</span>Webhook</a>
+        <a href="analytics.html" class="nav-item"><span class="nav-icon">&#x1F4C8;</span>分析面板</a>
+        <a href="subscription.html" class="nav-item"><span class="nav-icon">&#x2B50;</span>订阅</a>
       </nav>
-      <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid #333;">
-        <div class="nav-item" onclick="logout()">退出登录</div>
+      <div class="sidebar-footer">
+        <button class="nav-item" onclick="handleLogout()"><span class="nav-icon">&#x2192;</span>退出登录</button>
       </div>
-    </div>
+    </aside>
 
-    <div class="main">
-      <div class="header">
-        <h1>🔗 Webhook 管理</h1>
+    <main class="main-content">
+      <div class="page-header">
+        <div>
+          <h1>&#x1F517; Webhook 管理</h1>
+          <p class="subtitle">配置事件通知，集成到你的系统中</p>
+        </div>
         <button class="btn btn-primary" onclick="showAddModal()">添加 Webhook</button>
       </div>
 
       <div id="message-container"></div>
 
       <div class="tabs">
-        <button class="tab active" onclick="showTab('list')">Webhook 列表</button>
-        <button class="tab" onclick="showTab('events')">事件说明</button>
+        <button class="tab active" data-tab="list">Webhook 列表</button>
+        <button class="tab" data-tab="events">事件说明</button>
       </div>
 
       <div id="list-tab">
         <div class="card">
-          <h2>已配置的 Webhook</h2>
+          <div class="card-header">
+            <h2>已配置的 Webhook</h2>
+          </div>
           <div id="webhook-list">
-            <div class="loading">加载中...</div>
+            <div class="loading-state"><div class="spinner"></div><p>加载中...</p></div>
           </div>
         </div>
       </div>
 
       <div id="events-tab" class="hidden">
         <div class="card">
-          <h2>支持的事件</h2>
-          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
-            <div style="background: #0f0f23; padding: 16px; border-radius: 12px;">
-              <h3 style="margin-bottom: 8px;">publish.completed</h3>
-              <p style="color: #888; font-size: 13px;">内容发布成功时触发</p>
+          <div class="card-header">
+            <h2>支持的事件</h2>
+          </div>
+          <div class="events-grid">
+            <div class="event-card">
+              <h3>publish.completed</h3>
+              <p>内容发布成功时触发</p>
             </div>
-            <div style="background: #0f0f23; padding: 16px; border-radius: 12px;">
-              <h3 style="margin-bottom: 8px;">publish.failed</h3>
-              <p style="color: #888; font-size: 13px;">内容发布失败时触发</p>
+            <div class="event-card">
+              <h3>publish.failed</h3>
+              <p>内容发布失败时触发</p>
             </div>
-            <div style="background: #0f0f23; padding: 16px; border-radius: 12px;">
-              <h3 style="margin-bottom: 8px;">intercept.matched</h3>
-              <p style="color: #888; font-size: 13px;">截流命中时触发</p>
+            <div class="event-card">
+              <h3>intercept.matched</h3>
+              <p>截流命中时触发</p>
             </div>
-            <div style="background: #0f0f23; padding: 16px; border-radius: 12px;">
-              <h3 style="margin-bottom: 8px;">agent.message</h3>
-              <p style="color: #888; font-size: 13px;">AI 助手消息时触发</p>
+            <div class="event-card">
+              <h3>agent.message</h3>
+              <p>AI 助手消息时触发</p>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </main>
   </div>
 
-  <!-- Add Webhook Modal -->
-  <div id="add-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000;">
-    <div style="background: #1a1a2e; padding: 30px; border-radius: 16px; width: 500px; max-height: 80vh; overflow-y: auto;">
-      <h2 style="margin-bottom: 20px;">添加 Webhook</h2>
-      <label class="label">名称</label>
-      <input type="text" class="input" id="webhook-name" placeholder="给这个 Webhook 起个名字">
-      
-      <label class="label">URL</label>
-      <input type="text" class="input" id="webhook-url" placeholder="https://example.com/webhook">
-      
-      <label class="label">监听事件（多选）</label>
-      <div class="checkbox-group" id="events-checkboxes">
-        <label class="checkbox-item">
-          <input type="checkbox" value="publish.completed"> publish.completed
-        </label>
-        <label class="checkbox-item">
-          <input type="checkbox" value="publish.failed"> publish.failed
-        </label>
-        <label class="checkbox-item">
-          <input type="checkbox" value="intercept.matched"> intercept.matched
-        </label>
-        <label class="checkbox-item">
-          <input type="checkbox" value="agent.message"> agent.message
-        </label>
+  <!-- Add/Edit Webhook Modal -->
+  <div class="modal-backdrop" id="add-modal">
+    <div class="modal-panel webhook-modal">
+      <h2 id="modal-title">添加 Webhook</h2>
+      <div class="input-group">
+        <label class="label" for="webhook-name">名称</label>
+        <input type="text" class="input" id="webhook-name" placeholder="给这个 Webhook 起个名字">
       </div>
-      
-      <label class="label">签名密钥（可选）</label>
-      <input type="password" class="input" id="webhook-secret" placeholder="用于验证请求来源">
-      
-      <div style="display: flex; gap: 12px; margin-top: 20px;">
+      <div class="input-group">
+        <label class="label" for="webhook-url">URL</label>
+        <input type="text" class="input" id="webhook-url" placeholder="https://example.com/webhook">
+      </div>
+      <div class="input-group">
+        <label class="label">监听事件（多选）</label>
+        <div class="checkbox-group" id="events-checkboxes">
+          <label class="checkbox-item"><input type="checkbox" value="publish.completed"> publish.completed</label>
+          <label class="checkbox-item"><input type="checkbox" value="publish.failed"> publish.failed</label>
+          <label class="checkbox-item"><input type="checkbox" value="intercept.matched"> intercept.matched</label>
+          <label class="checkbox-item"><input type="checkbox" value="agent.message"> agent.message</label>
+        </div>
+      </div>
+      <div class="input-group">
+        <label class="label" for="webhook-secret">签名密钥（可选）</label>
+        <input type="password" class="input" id="webhook-secret" placeholder="用于验证请求来源">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('add-modal')">取消</button>
         <button class="btn btn-primary" onclick="saveWebhook()">保存</button>
-        <button class="btn btn-secondary" onclick="closeModal()">取消</button>
       </div>
     </div>
   </div>
 
-  <!-- View Logs Modal -->
-  <div id="logs-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000;">
-    <div style="background: #1a1a2e; padding: 30px; border-radius: 16px; width: 800px; max-height: 80vh; overflow-y: auto;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+  <!-- Logs Modal -->
+  <div class="modal-backdrop" id="logs-modal">
+    <div class="modal-panel" style="max-width: 740px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5);">
         <h2>发送日志</h2>
-        <button class="btn btn-secondary" onclick="closeLogsModal()">关闭</button>
+        <button class="btn btn-ghost btn-sm" onclick="closeModal('logs-modal')">关闭</button>
       </div>
       <div id="logs-content">
-        <div class="loading">加载中...</div>
+        <div class="loading-state"><div class="spinner"></div><p>加载中...</p></div>
       </div>
     </div>
   </div>
 
+  <script src="/js/shared.js"></script>
   <script>
-    const API_BASE = '/api';
-    let token = localStorage.getItem('token');
-    let editingId = null;
+    (function() {
+      const API_BASE = MatrixGrow.API_BASE || '/api';
+      let editingId = null;
 
-    // 检查登录状态
-    async function checkAuth() {
-      if (!token) {
-        window.location.href = '/login.html';
-        return false;
+      async function init() {
+        if (!await MatrixGrow.checkAuth()) return;
+        loadWebhooks();
       }
 
-      try {
-        const res = await fetch(`${API_BASE}/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` }
+      // Tab switching
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const tabName = tab.dataset.tab;
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          document.getElementById('list-tab').classList.toggle('hidden', tabName !== 'list');
+          document.getElementById('events-tab').classList.toggle('hidden', tabName !== 'events');
         });
+      });
 
-        if (!res.ok) throw new Error('Unauthorized');
-        return true;
-      } catch {
-        localStorage.removeItem('token');
-        window.location.href = '/login.html';
-        return false;
-      }
-    }
-
-    // 显示消息
-    function showMessage(text, type = 'success') {
-      const container = document.getElementById('message-container');
-      container.innerHTML = `<div class="message ${type}">${text}</div>`;
-      setTimeout(() => container.innerHTML = '', 3000);
-    }
-
-    // 切换标签
-    function showTab(tab) {
-      document.querySelectorAll('#list-tab, #events-tab').forEach(el => el.classList.add('hidden'));
-      document.getElementById(`${tab}-tab`).classList.remove('hidden');
-      
-      document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-      event.target.classList.add('active');
-    }
-
-    // 加载 webhook 列表
-    async function loadWebhooks() {
-      try {
-        const res = await fetch(`${API_BASE}/webhooks`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const data = await res.json();
-
-        if (!data.webhooks?.length) {
-          document.getElementById('webhook-list').innerHTML = '<p style="color: #888; text-align: center; padding: 40px;">暂未配置任何 Webhook</p>';
-          return;
-        }
-
-        const html = data.webhooks.map(wh => `
-          <div class="webhook-item">
-            <div class="webhook-info">
-              <span class="status-badge ${wh.is_active ? 'status-active' : 'status-inactive'}">
-                ${wh.is_active ? '启用' : '禁用'}
-              </span>
-              <h3>${wh.name}</h3>
-              <div class="url">${wh.url}</div>
-              <div class="events">
-                ${wh.events.map(e => `<span class="event-tag">${e}</span>`).join('')}
+      async function loadWebhooks() {
+        const list = document.getElementById('webhook-list');
+        try {
+          const data = await MatrixGrow.fetchJSON(`${API_BASE}/webhooks`);
+          if (!data.webhooks || !data.webhooks.length) {
+            list.innerHTML = MatrixGrow.renderEmpty('&#x1F517;', '暂未配置 Webhook', '添加一个 Webhook 来接收事件通知', '<button class="btn btn-primary btn-sm mt-4" onclick="showAddModal()">添加 Webhook</button>');
+            return;
+          }
+          list.innerHTML = data.webhooks.map(wh => {
+            const statusClass = wh.is_active ? 'badge-success' : 'badge-warning';
+            const statusText = wh.is_active ? '启用' : '禁用';
+            return `
+              <div class="webhook-item">
+                <div class="webhook-info">
+                  <span class="badge ${statusClass}" style="margin-bottom:6px;">${statusText}</span>
+                  <h3>${wh.name}</h3>
+                  <div class="url">${wh.url}</div>
+                  <div class="events">
+                    ${wh.events.map(e => `<span class="tag">${e}</span>`).join('')}
+                  </div>
+                  <div class="meta">
+                    创建于 ${MatrixGrow.formatDate(wh.created_at)}
+                    &middot; 失败 ${wh.failed_count || 0} 次
+                    &middot; 最后发送 ${wh.last_sent_at ? MatrixGrow.formatDate(wh.last_sent_at) : '从未'}
+                  </div>
+                </div>
+                <div class="webhook-actions">
+                  <button class="btn btn-ghost btn-sm test-btn" data-id="${wh.id}">测试</button>
+                  <button class="btn btn-ghost btn-sm log-btn" data-id="${wh.id}">日志</button>
+                  <button class="btn btn-ghost btn-sm edit-btn" data-id="${wh.id}">编辑</button>
+                  <button class="btn btn-danger btn-sm delete-btn" data-id="${wh.id}">删除</button>
+                </div>
               </div>
-              <div class="meta">
-                创建于 ${new Date(wh.created_at).toLocaleDateString()} · 
-                失败 ${wh.failed_count} 次 · 
-                最后发送 ${wh.last_sent_at ? new Date(wh.last_sent_at).toLocaleDateString() : '从未'}
-              </div>
-            </div>
-            <div class="webhook-actions">
-              <button class="btn btn-secondary btn-small" onclick="testWebhook(${wh.id})">测试</button>
-              <button class="btn btn-secondary btn-small" onclick="viewLogs(${wh.id})">日志</button>
-              <button class="btn btn-secondary btn-small" onclick="editWebhook(${wh.id})">编辑</button>
-              <button class="btn btn-danger btn-small" onclick="deleteWebhook(${wh.id})">删除</button>
-            </div>
-          </div>
-        `).join('');
-
-        document.getElementById('webhook-list').innerHTML = html;
-      } catch (e) {
-        console.error('Failed to load webhooks:', e);
-        showMessage('加载失败', 'error');
-      }
-    }
-
-    // 显示添加模态框
-    function showAddModal() {
-      editingId = null;
-      document.getElementById('add-modal').style.display = 'flex';
-      document.getElementById('webhook-name').value = '';
-      document.getElementById('webhook-url').value = '';
-      document.getElementById('webhook-secret').value = '';
-      document.querySelectorAll('#events-checkboxes input').forEach(el => el.checked = false);
-    }
-
-    // 关闭模态框
-    function closeModal() {
-      document.getElementById('add-modal').style.display = 'none';
-    }
-
-    // 保存 webhook
-    async function saveWebhook() {
-      const name = document.getElementById('webhook-name').value.trim();
-      const url = document.getElementById('webhook-url').value.trim();
-      const secret = document.getElementById('webhook-secret').value.trim();
-      const events = Array.from(document.querySelectorAll('#events-checkboxes input:checked')).map(el => el.value);
-
-      if (!name || !url || !events.length) {
-        showMessage('请填写完整信息', 'error');
-        return;
-      }
-
-      try {
-        let res;
-        if (editingId) {
-          res = await fetch(`${API_BASE}/webhooks/${editingId}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`
-            },
-            body: JSON.stringify({ name, url, events, secret, is_active: true })
+            `;
+          }).join('');
+          // Attach event listeners
+          list.querySelectorAll('.test-btn').forEach(btn => {
+            btn.addEventListener('click', () => testWebhook(+btn.dataset.id));
           });
-        } else {
-          res = await fetch(`${API_BASE}/webhooks`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`
-            },
-            body: JSON.stringify({ name, url, events, secret })
+          list.querySelectorAll('.log-btn').forEach(btn => {
+            btn.addEventListener('click', () => viewLogs(+btn.dataset.id));
           });
+          list.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.addEventListener('click', () => editWebhook(+btn.dataset.id));
+          });
+          list.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', () => deleteWebhook(+btn.dataset.id));
+          });
+        } catch (e) {
+          list.innerHTML = MatrixGrow.renderError('加载 Webhook 列表失败', loadWebhooks);
         }
-
-        if (res.ok) {
-          showMessage(editingId ? '更新成功' : '添加成功');
-          closeModal();
-          loadWebhooks();
-        } else {
-          const err = await res.json();
-          showMessage(err.error || '操作失败', 'error');
-        }
-      } catch (e) {
-        showMessage('操作失败', 'error');
       }
-    }
 
-    // 编辑 webhook
-    async function editWebhook(id) {
-      try {
-        const res = await fetch(`${API_BASE}/webhooks`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const data = await res.json();
-        const wh = data.webhooks.find(w => w.id === id);
-        if (!wh) return;
-
-        editingId = id;
-        document.getElementById('webhook-name').value = wh.name;
-        document.getElementById('webhook-url').value = wh.url;
+      function showAddModal() {
+        editingId = null;
+        document.getElementById('modal-title').textContent = '添加 Webhook';
+        document.getElementById('webhook-name').value = '';
+        document.getElementById('webhook-url').value = '';
         document.getElementById('webhook-secret').value = '';
-        
-        document.querySelectorAll('#events-checkboxes input').forEach(el => {
-          el.checked = wh.events.includes(el.value);
-        });
-
-        document.getElementById('add-modal').style.display = 'flex';
-      } catch (e) {
-        showMessage('加载失败', 'error');
+        document.querySelectorAll('#events-checkboxes input').forEach(el => el.checked = false);
+        document.getElementById('add-modal').classList.add('open');
       }
-    }
 
-    // 删除 webhook
-    async function deleteWebhook(id) {
-      if (!confirm('确定要删除这个 Webhook 吗？')) return;
-
-      try {
-        const res = await fetch(`${API_BASE}/webhooks/${id}`, {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (res.ok) {
-          showMessage('删除成功');
-          loadWebhooks();
-        } else {
-          showMessage('删除失败', 'error');
-        }
-      } catch (e) {
-        showMessage('删除失败', 'error');
+      function closeModal(id) {
+        document.getElementById(id).classList.remove('open');
       }
-    }
 
-    // 测试 webhook
-    async function testWebhook(id) {
-      try {
-        const res = await fetch(`${API_BASE}/webhooks/${id}/test`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` }
-        });
+      async function saveWebhook() {
+        const name = document.getElementById('webhook-name').value.trim();
+        const url = document.getElementById('webhook-url').value.trim();
+        const secret = document.getElementById('webhook-secret').value.trim();
+        const events = Array.from(document.querySelectorAll('#events-checkboxes input:checked')).map(el => el.value);
 
-        if (res.ok) {
-          showMessage('测试事件已发送');
-        } else {
-          const err = await res.json();
-          showMessage(err.error || '发送失败', 'error');
-        }
-      } catch (e) {
-        showMessage('发送失败', 'error');
-      }
-    }
-
-    // 查看日志
-    async function viewLogs(id) {
-      document.getElementById('logs-modal').style.display = 'flex';
-      document.getElementById('logs-content').innerHTML = '<div class="loading">加载中...</div>';
-
-      try {
-        const res = await fetch(`${API_BASE}/webhooks/${id}/logs`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const data = await res.json();
-
-        if (!data.logs?.length) {
-          document.getElementById('logs-content').innerHTML = '<p style="color: #888; text-align: center; padding: 40px;">暂无发送记录</p>';
+        if (!name || !url || !events.length) {
+          MatrixGrow.toast.warning('请填写完整信息');
           return;
         }
 
-        const html = `
-          <table class="logs-table">
-            <thead>
-              <tr>
-                <th>时间</th>
-                <th>事件</th>
-                <th>状态</th>
-                <th>响应</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${data.logs.map(log => `
-                <tr>
-                  <td>${new Date(log.created_at).toLocaleString()}</td>
-                  <td>${log.event}</td>
-                  <td class="${log.status === 'success' ? 'log-status-success' : 'log-status-error'}">
-                    ${log.status}
-                  </td>
-                  <td>${log.error_message || (log.response_code ? `HTTP ${log.response_code}` : '-')}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        `;
-        document.getElementById('logs-content').innerHTML = html;
-      } catch (e) {
-        document.getElementById('logs-content').innerHTML = '<p style="color: #ff4444;">加载失败</p>';
+        try {
+          let res;
+          if (editingId) {
+            res = await fetch(`${API_BASE}/webhooks/${editingId}`, {
+              method: 'PUT',
+              headers: MatrixGrow.authHeaders({ 'Content-Type': 'application/json' }),
+              body: JSON.stringify({ name, url, events, secret, is_active: true })
+            });
+          } else {
+            res = await fetch(`${API_BASE}/webhooks`, {
+              method: 'POST',
+              headers: MatrixGrow.authHeaders({ 'Content-Type': 'application/json' }),
+              body: JSON.stringify({ name, url, events, secret })
+            });
+          }
+          if (res.ok) {
+            MatrixGrow.toast.success(editingId ? '更新成功' : '添加成功');
+            closeModal('add-modal');
+            loadWebhooks();
+          } else {
+            const err = await res.json().catch(() => ({}));
+            MatrixGrow.toast.error(err.error || '操作失败');
+          }
+        } catch {
+          MatrixGrow.toast.error('操作失败');
+        }
       }
-    }
 
-    function closeLogsModal() {
-      document.getElementById('logs-modal').style.display = 'none';
-    }
+      async function editWebhook(id) {
+        try {
+          const data = await MatrixGrow.fetchJSON(`${API_BASE}/webhooks`);
+          const wh = data.webhooks.find(w => w.id === id);
+          if (!wh) return;
+          editingId = id;
+          document.getElementById('modal-title').textContent = '编辑 Webhook';
+          document.getElementById('webhook-name').value = wh.name;
+          document.getElementById('webhook-url').value = wh.url;
+          document.getElementById('webhook-secret').value = '';
+          document.querySelectorAll('#events-checkboxes input').forEach(el => {
+            el.checked = wh.events.includes(el.value);
+          });
+          document.getElementById('add-modal').classList.add('open');
+        } catch {
+          MatrixGrow.toast.error('加载 Webhook 失败');
+        }
+      }
 
-    function logout() {
-      localStorage.removeItem('token');
-      window.location.href = '/login.html';
-    }
+      async function deleteWebhook(id) {
+        const confirmed = await MatrixGrow.confirm('删除 Webhook', '确定要删除这个 Webhook 吗？此操作不可撤销。', { icon: 'delete', confirmText: '删除', danger: true });
+        if (!confirmed) return;
+        try {
+          await MatrixGrow.fetchJSON(`${API_BASE}/webhooks/${id}`, { method: 'DELETE' });
+          MatrixGrow.toast.success('删除成功');
+          loadWebhooks();
+        } catch {
+          MatrixGrow.toast.error('删除失败');
+        }
+      }
 
-    // 初始化
-    checkAuth().then(auth => {
-      if (auth) loadWebhooks();
-    });
+      async function testWebhook(id) {
+        try {
+          await MatrixGrow.fetchJSON(`${API_BASE}/webhooks/${id}/test`, { method: 'POST' });
+          MatrixGrow.toast.success('测试事件已发送');
+        } catch (e) {
+          MatrixGrow.toast.error(e.message || '发送失败');
+        }
+      }
+
+      async function viewLogs(id) {
+        document.getElementById('logs-modal').classList.add('open');
+        const content = document.getElementById('logs-content');
+        content.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>加载中...</p></div>';
+        try {
+          const data = await MatrixGrow.fetchJSON(`${API_BASE}/webhooks/${id}/logs`);
+          if (!data.logs || !data.logs.length) {
+            content.innerHTML = MatrixGrow.renderEmpty('', '暂无发送记录', '');
+            return;
+          }
+          content.innerHTML = `
+            <table class="logs-table">
+              <thead><tr>
+                <th>时间</th><th>事件</th><th>状态</th><th>响应</th>
+              </tr></thead>
+              <tbody>
+                ${data.logs.map(log => `
+                  <tr>
+                    <td>${MatrixGrow.formatDateTime(log.created_at)}</td>
+                    <td><span class="tag">${log.event}</span></td>
+                    <td><span class="badge ${log.status === 'success' ? 'badge-success' : 'badge-error'}">${log.status}</span></td>
+                    <td>${log.error_message || (log.response_code ? 'HTTP ' + log.response_code : '-')}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          `;
+        } catch {
+          content.innerHTML = '<div class="error-state"><h3>加载失败</h3><p>无法获取日志数据</p></div>';
+        }
+      }
+
+      function handleLogout() {
+        MatrixGrow.logout();
+      }
+
+      init();
+    })();
   </script>
 </body>
 </html>
