@@ -9,12 +9,71 @@ let serverPort = null;
 
 const isDev = !app.isPackaged;
 
+function buildAppMenu() {
+  const template = [
+    {
+      label: '文件',
+      submenu: [
+        { label: '设置', accelerator: 'CmdOrCtrl+,', click: () => mainWindow.loadURL(`http://localhost:${serverPort}/dashboard.html`) },
+        { type: 'separator' },
+        { label: '退出', accelerator: 'CmdOrCtrl+Q', click: () => { app.isQuitting = true; app.quit(); } }
+      ]
+    },
+    {
+      label: '编辑',
+      submenu: [
+        { label: '撤销', accelerator: 'CmdOrCtrl+Z', role: 'undo' },
+        { label: '重做', accelerator: 'Shift+CmdOrCtrl+Z', role: 'redo' },
+        { type: 'separator' },
+        { label: '剪切', accelerator: 'CmdOrCtrl+X', role: 'cut' },
+        { label: '复制', accelerator: 'CmdOrCtrl+C', role: 'copy' },
+        { label: '粘贴', accelerator: 'CmdOrCtrl+V', role: 'paste' },
+        { label: '全选', accelerator: 'CmdOrCtrl+A', role: 'selectAll' }
+      ]
+    },
+    {
+      label: '视图',
+      submenu: [
+        { label: '刷新', accelerator: 'CmdOrCtrl+R', click: () => mainWindow.webContents.reload() },
+        { label: '强制刷新', accelerator: 'CmdOrCtrl+Shift+R', click: () => mainWindow.webContents.reloadIgnoringCache() },
+        { type: 'separator' },
+        { label: '放大', accelerator: 'CmdOrCtrl+=', role: 'zoomIn' },
+        { label: '缩小', accelerator: 'CmdOrCtrl+-', role: 'zoomOut' },
+        { label: '重置缩放', accelerator: 'CmdOrCtrl+0', role: 'resetZoom' },
+        { type: 'separator' },
+        { label: '开发者工具', accelerator: 'F12', click: () => mainWindow.webContents.toggleDevTools() }
+      ]
+    },
+    {
+      label: '帮助',
+      submenu: [
+        {
+          label: '关于 MatrixGrow',
+          click: () => {
+            const { dialog } = require('electron');
+            dialog.showMessageBox(mainWindow, {
+              type: 'info',
+              title: '关于 MatrixGrow',
+              message: `MatrixGrow v${app.getVersion()}`,
+              detail: 'AI 内容分发与流量截流引擎\n\n导入 Coze/Dify 工作流到 n8n\n一键分发到 27+ 平台\nAI 改写 + 智能截流回复'
+            });
+          }
+        }
+      ]
+    }
+  ];
+
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
     minWidth: 800,
     minHeight: 600,
+    autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -71,7 +130,8 @@ function startServer() {
 
   serverProcess = fork(path.join(__dirname, '../server.js'), [], {
     env,
-    stdio: ['inherit', 'pipe', 'pipe', 'ipc']
+    stdio: ['inherit', 'pipe', 'pipe', 'ipc'],
+    execArgv: ['--experimental-sqlite']
   });
 
   serverProcess.stdout.on('data', (data) => {
@@ -79,7 +139,13 @@ function startServer() {
   });
 
   serverProcess.stderr.on('data', (data) => {
-    console.error(`[Server Error] ${data.toString()}`);
+    const msg = data.toString();
+    console.error(`[Server Error] ${msg}`);
+    // 如果服务崩溃，窗口会一直白屏，显示错误对话框
+    if (msg.includes('Error') || msg.includes('Cannot find module')) {
+      const { dialog } = require('electron');
+      dialog.showErrorBox('服务启动失败', msg.substring(0, 500));
+    }
   });
 
   serverProcess.on('message', (message) => {
@@ -94,6 +160,10 @@ function startServer() {
 
   serverProcess.on('exit', (code) => {
     console.log(`Server process exited with code ${code}`);
+    if (code !== 0 && !serverPort) {
+      const { dialog } = require('electron');
+      dialog.showErrorBox('服务异常退出', `MatrixGrow 服务进程意外退出 (退出码: ${code})\n\n请尝试重新启动应用或联系技术支持。`);
+    }
   });
 }
 
@@ -110,6 +180,7 @@ if (!gotTheLock) {
   });
 
   app.whenReady().then(() => {
+    buildAppMenu();
     createWindow();
     createTray();
     startServer();

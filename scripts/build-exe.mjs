@@ -18,17 +18,24 @@ try {
 
   console.log('\n[2/4] 安装依赖...');
   process.chdir(projectRoot);
-  execSync('npm ci', { stdio: 'inherit' });
+  execSync('npm install', { stdio: 'inherit' });
 
   console.log('\n[3/4] 重建原生模块...');
   try {
-    execSync('npx @electron/rebuild -f -w sqlite3 -m .', { stdio: 'inherit' });
+    execSync('npx @electron/rebuild -f -w @napi-rs/canvas -m .', { stdio: 'inherit' });
   } catch (e) {
-    console.warn('警告: sqlite3 重建可能失败，继续尝试...');
+    console.warn('警告: 原生模块重建可能失败，继续尝试...');
   }
 
   console.log('\n[4/4] 构建 NSIS 安装包...');
-  execSync('npx electron-builder --win --config electron-builder.yml', { stdio: 'inherit' });
+  execSync('npx electron-builder --win --config electron-builder.yml', {
+    stdio: 'inherit',
+    env: {
+      ...process.env,
+      ELECTRON_MIRROR: 'https://npmmirror.com/mirrors/electron/',
+      ELECTRON_BUILDER_BINARIES_MIRROR: 'https://npmmirror.com/mirrors/electron-builder-binaries/'
+    }
+  });
 
   console.log('\n=========================================');
   console.log('✅ 打包完成！');
